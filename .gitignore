@@ -1,4 +1,5 @@
 real.sqlite3
+bd/db.sqlite3
 *.pyc
 *.pdf
 *.json

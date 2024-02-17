@@ -1,0 +1,238 @@
+{% extends 'base.html' %} {% block content %}
+<div class="row">
+  <div id="mensagens" class="col-12"></div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <h1 class="text-center">Registro de Matrículas</h1>
+  </div>
+</div>
+
+<div id="classe" class="row mt-2 bg-body-secondary rounded-3">
+
+  <div class="col-sm-3 p-3">
+    <div class="input-group">
+      <div class="input-group-prepend">
+        <span class="input-group-text bg-dark text-white" id="basic-addon1"
+          ><i class="bi bi-search"></i
+        ></span>
+      </div>
+
+      <input
+        type="number"
+        id="ano"
+        placeholder="Ano"
+        class="form-control formulario"
+        aria-describedby="basic-addon1"
+      />
+    </div>
+  </div>
+  
+ 
+  <div class="col-sm-2 p-3">
+    <select
+      type="text"
+      id="classes"
+      placeholder="Classes"
+      class="form-control formulario"
+      aria-describedby="basic-addon1"
+    />
+  
+    </select>
+  </div>
+
+  <div class="col-sm-2 p-3">
+    <button type="button" id="alfabetica" class="btn btn-outline-dark btn-lg"> 
+                           <i class="bi bi-sort-alpha-down"></i>
+                        </button>
+  </div>
+
+</div>
+
+
+<div class="row mt-3">
+  <div class="col-12">
+    <table
+      id="tabela"
+      class="table table-hover table-responsive table-bordered table-success"
+    >
+      <thead>
+        <th>Nº</th>
+        <th>Nome</th>
+        <th>Situação</th>
+        <th>Transferir</th>
+        <th>Remanejar </th>
+        <th>Arquivar</th>
+      
+      </thead>
+      <tbody id="corpoTabela">
+        <!-- Tabela dinâmica aparece aqui -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+<!-- Modal Transferencia-->
+<div
+  class="modal fade"
+  id="transferirModal"
+  tabindex="-1"
+  aria-labelledby="transferirModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="transferirModalLabel">
+          Vai transferir o aluno? Então nos informe a data!
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="matricula" />
+        <div id="dadosMatricula" class="row">
+          <!-- Dados do Registro Aqui -->
+        </div>
+      </div>
+      <div class="modal-footer mt-2">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button
+                        id="simTransferir"
+                        type="button"
+                        class="btn btn-primary"
+                        data-bs-dismiss="modal"
+                    >
+                        Transferir
+                    </button>
+                    </div>
+    </div>
+  </div>
+</div>
+<!-- Fim Modal Atualizar Registro-->
+
+
+<script type="text/javascript">
+$(document).ready(() => {
+
+
+    function carregarClasses(ano) {
+        $.get({
+            url: "{% url 'carregarclasses' %}",
+            data: {
+                ano: ano
+
+            },
+            success: (response) =>{
+                $("#classes").html(response);
+            },
+            fail: () =>{
+
+            }
+        })
+    }
+
+    function carregarMatriculas(classe) {
+        $.get({
+            url: "{% url 'carregarmatriculas' %}",
+            data: {
+                classe: classe
+            },
+            success: (response) => {
+                $("#corpoTabela").html(response);
+                $(".transferir").off('click');
+                 $(".transferir").click(function (){
+                  matricula = $(this).val();
+              
+                  buscarMatricula(matricula);                               
+            });
+
+            },
+            fail: () => {
+
+            }
+        })
+    }
+
+    function ordemAlfabetica(classe) {
+         $.get({
+            url: "{% url 'ordemalfabetica' %}",
+            data: {
+                classe: classe
+            },
+            success: (response) => {
+                $("#corpoTabela").html(response);
+            },
+            fail: () => {
+
+            }
+        })
+    }
+
+    function sendTransferir() {
+        $.get({
+            url: "{% url 'transferir' %}",
+            data: {
+                matricula: matricula,
+                data_movimentacao: $("#dataMovimentacao").val()
+            },
+            success: (response) => {
+                     $("#mensagens").html(response);
+                 setTimeout(function () {
+                 $("#mensagem").css("display", "none");
+                }, 3000);
+                carregarMatriculas($("#classes").val());
+            },
+            fail: (response) => {}
+        })
+    }
+     // buscar matricula
+    function buscarMatricula(matricula){
+
+        $.get({
+            url: "{% url 'buscarmatricula' %}",
+            data: {
+                matricula: matricula
+            },
+            success: (response) => {
+                $("#simTransferir").off("click");
+                $("#simDeletar").off("click");
+                $("#dadosMatricula").html(response);
+                  $("#simTransferir").click( function (){
+                    sendTransferir();
+                  });
+                 
+            },
+            fail: (response) => {},
+        });
+    }
+
+    $("#ano").focusout(() => {
+        carregarClasses($("#ano").val());
+    });
+
+    $("#classes").change(() => {
+        carregarMatriculas($("#classes").val());
+    });
+
+    $("#alfabetica").click(() => {
+        ordemAlfabetica($("#classes").val());
+    });
+
+
+
+});
+
+
+</script>
+
+
+{% endblock content %}

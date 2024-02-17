@@ -1,0 +1,2310 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="row">
+  <div id="mensagens" class="col-12"></div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <h1 class="text-center">Registro de Classes</h1>
+  </div>
+</div>
+
+
+
+<div id="classe" class="row mt-2 bg-body-secondary rounded-3">
+  {% csrf_token %}
+  <!--   <label class="btn btn-outline-success  m-3" for="success-outlined" title="Pesquisar"><i class="bi bi-search"></i>-->
+
+  <div class="col-sm-2 p-3">
+    <div class="input-group">
+      <div class="input-group-prepend">
+        <span class="input-group-text bg-dark text-white" id="basic-addon1"
+          ><i class="bi bi-search"></i
+        ></span>
+      </div>
+
+      <input
+        type="number"
+        id="ano"
+        placeholder="Ano"
+        class="form-control formulario"
+        aria-describedby="basic-addon1"
+      />
+    </div>
+  </div>
+  <div class="col-sm-2 p-3">
+    <input
+      type="number"
+      id="serie"
+      placeholder="Série"
+      class="form-control formulario repeticao"
+      aria-describedby="basic-addon1"
+    />
+  </div>
+  <div class="col-sm-2 p-3">
+    <input
+      type="text"
+      id="turma"
+      placeholder="Turma"
+      class="form-control formulario" 
+      aria-describedby="basic-addon1"
+    />
+  </div>
+  <div class="col-sm-2 p-3">
+    <select
+      type="text"
+      id="periodo"
+      placeholder="Periodo"
+      class="form-control formulario repeticao"
+      aria-describedby="basic-addon1"
+    />
+    {% for periodo in periodos %}
+    <option value={{periodo.0}}> {{periodo.1}} </option>
+        
+    {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-sm-4 d-flex justify-content-center">
+    <button
+      id="gravar"
+      class="btn btn-outline-dark m-3"
+      title="Classe"
+    >
+      Gravar
+    </button>
+  </div>
+</div>
+
+<div class="row mt-3">
+  <div class="col-12">
+    <table
+      id="tabela"
+      class="table table-hover table-responsive table-bordered table-success"
+    >
+      <thead class="text-center">
+        <th>Série</th>
+        <th>Turma</th>
+        <th>Período</th>
+        <th>Atualizar</th>
+        <th>Matricular</th>
+        <th>Visualizar</th>
+      </thead>
+      <tbody id="corpoTabela">
+        <!-- Tabela dinâmica aparece aqui -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Atualizar Registro-->
+<div
+  class="modal fade"
+  id="atualizarModal"
+  tabindex="-1"
+  aria-labelledby="atualizarModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="atualizarModalLabel">
+          Deseja alterar essa classe?
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div id="dadosClasse" class="row">
+          <!-- Dados do Registro Aqui -->
+        </div>
+      </div>
+      <div class="modal-footer mt-2">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button
+                        id="simAtualizar"
+                        type="button"
+                        class="btn btn-primary"
+                        data-bs-dismiss="modal"
+                    >
+                        Atualizar
+                    </button>
+                    <button
+                        id="simDeletar"
+                        type="button"
+                        class="btn btn-warning"
+                        data-bs-dismiss="modal"
+                    >
+                         Deletar
+                    </button>
+                    </div>
+    </div>
+  </div>
+</div>
+<!-- Fim Modal Atualizar Registro-->
+
+
+<!-- Modal Matricula-->
+<div
+  class="modal fade"
+  id="matricularModal"
+  tabindex="-1"
+  aria-labelledby="matricularModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="matricularModalLabel">
+          Tela de matrícula
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="row">
+      <div class="col-md-2"> </div>
+      <div id="aviso" class="col-md-8 mt-1"> </div>
+      <div class="col-md-2"> </div>
+
+      </div>
+      <div class="modal-body">
+        <div id="dadosMatricula" class="row">
+          <!-- Dados da Matrícula -->
+        </div>
+        
+      <div class="row mt-3">
+      <div class="col-12">
+    <table
+      id="tabela"
+      class="table table-hover table-responsive table-bordered table-success"
+    >
+      <thead>
+        <th>Nome</th> 
+        <th>RA</th>
+        <th></th>
+      </thead>
+      <tbody id="tabelaAlunos">
+        <!-- Tabela dinâmica aparece aqui -->
+      </tbody>
+    </table>
+  </div>
+</div>
+      </div>
+      <div class="modal-footer">
+          <button type="button" class="btn btn-success"> Aplicar </button>
+      </div>
+      
+    </div>
+  </div>
+</div>
+<!-- Fim Modal Matricula -->
+
+
+<!-- Modal Visualizar Matrículas-->
+<div
+  class="modal fade"
+  id="visualizarClasseModal"
+  tabindex="-1"
+  aria-labelledby="visualizarModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="visualizarModalLabel">
+          Visualização da Classe
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+     
+      <div class="modal-body">
+      <div id="alunosClasse"> 
+        <!--Tabela aparece aqui-->
+      </div>
+      </div>
+      <div class="modal-footer mt-2">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button
+                        id="editarTurma"
+                        type="button"
+                        class="btn btn-primary"
+                        data-bs-dismiss="modal"
+                    >
+                        Editar
+                    </button>
+                    <button
+                        id="deletarTodos"
+                        type="button"
+                        class="btn btn-warning"
+                        data-bs-dismiss="modal"
+                    >
+                         Deletar Todos
+                    </button>
+                    </div>
+    </div>
+  </div>
+</div>
+<!-- Fim Modal Atualizar Registro-->
+
+
+
+
+<script type="text/javascript">
+$(function(){
+    var classe = '';
+
+
+    function exibirTurma(classe){
+        $.get({
+          url: "{% url 'exibirTurma' %}",
+          data: {
+            classe: classe
+          },
+          success: (response) => {
+              $("#alunosClasse").html(response);
+             
+              
+          },
+          fail: (response) => {
+
+          }
+        })
+    }
+
+    function exibirTelaMatricula(classe) {
+      $.get({
+        url: "{% url 'telamatricular' %}",
+        data: {
+          classe: classe
+        },
+        success: (response) => {
+            $("#nomeAluno").off("keyup");
+            $("#dadosMatricula").html(response);
+            $("#nomeAluno").keyup(()=> sendBuscar());
+        
+        },
+        fail: (response) => {
+            alert("Erro na matricula");
+        }
+      });
+    }
+
+    // buscar classe
+    function buscarClasse(classe){
+
+        $.get({
+            url: "{% url 'buscarclasse' %}",
+            data: {
+                classe: classe
+            },
+            success: (response) => {
+                $("#simAtualizar").off("click");
+                $("#simDeletar").off("click");
+                $("#dadosClasse").html(response);
+                  $("#simAtualizar").click( function (){
+                    sendAtualizar();
+                  });
+                  $("#simDeletar").click(function () {
+                    sendDeletar();
+                  });
+            },
+            fail: (response) => {},
+        });
+    }
+
+    function sendDeletar() {
+        $.get({
+            url: "{% url 'deletarclasse' %}",
+            data: {
+                classe: $("#codClasse").val()
+            },
+            success:(response) => {
+                 $("#mensagens").html(response);
+                 setTimeout(function () {
+                 $("#mensagem").css("display", "none");
+                }, 3000);
+                sendListar();
+            },
+            fail: (response) => { $("#mensagens").html(response);}
+        });
+    }
+
+    function sendAtualizar() {
+        $.get({
+            url: "{% url 'atualizarclasse' %}",
+            data: {
+                ano: $("#anoAtualizar").val(),
+                classe: $("#codClasse").val(),
+                serie: $("#serieAtualizar").val(),
+                turma: $("#turmaAtualizar").val(),
+                periodo: $("#periodoAtualizar").val()
+                
+            },
+            success: (response) => {
+                $("#mensagens").html(response);
+                 setTimeout(function () {
+                 $("#mensagem").css("display", "none");
+                }, 3000);
+                sendListar();
+               
+            },
+            fail: (response) => {
+                $("#mensagens").html(response);
+            }
+        });
+    }
+   
+    function adicionarNaClasse(aluno) {
+        console.log($("#dataMatricula").val());
+        $.get({
+          url: "{% url 'adicionarNaClasse' %}",
+          data: {
+            ano: $("#ano").val(),
+            classe: $("#codClasse").val(),
+            aluno: aluno,
+            data_matricula: $("#dataMatricula").val()
+          },
+          success: (response) => {
+             $("#aviso").html(response);
+            setTimeout(function () {
+             $("#mensagem").css("display", "none");
+            }, 3000);
+              
+          },
+          fail: (response) => {
+
+          }
+        });
+    }
+
+    function sendGravar() {
+        $.get({
+        url: "{% url 'gravarclasse' %}",
+        data: {
+            ano: $("#ano").val(),
+            serie: $("#serie").val(),
+            turma: $("#turma").val().toUpperCase(),
+            periodo: $("#periodo").val()
+        },
+        success: (response) => {
+            $("#mensagens").html(response);
+            setTimeout(function () {
+             $("#mensagem").css("display", "none");
+            }, 3000);
+            sendListar();
+            verificarRepeticao();
+            $(":input").val('');
+            chamarAno();
+            preencherAutomatico();
+        },
+        fail: (response) => {},
+      });
+    }
+
+    function sendListar() {
+        $.get({
+        url: "{% url 'listarclasse' %}",
+        data: {
+            ano: $("#ano").val(),
+        },
+        success: (response) => {
+            $("#corpoTabela").html(response);
+            $(".visualizar").off("click");
+            $(".atualizar").off("click");
+            $(".matricular").off("click");
+            $(".visualizar").click(function() {
+                  classe = $(this).val();
+                   
+                  exibirTurma(classe);
+            });
+
+             $(".atualizar").click(function (){
+                  classe = $(this).val();
+              
+                  buscarClasse(classe);                               
+            });
+
+             $(".matricular").click(function (){
+                  classe = $(this).val();
+                 
+                  exibirTelaMatricula(classe);                               
+            });    
+        },
+        fail: (response) => {},
+      });
+    }
+
+    $("#ano").focusout(() => {
+      sendListar();
+    });
+   
+    $("#gravar").click(()=> {
+        sendGravar();
+        sendListar();
+    });
+
+    function sendBuscar() {
+      let nome = document.getElementById("nomeAluno").value;
+      
+      $.get({
+        url: "{% url 'buscarAluno' %}",
+        data: {
+          nome: nome,
+        },
+        success: (response) => {
+          
+          $("#tabelaAlunos").html(response);
+          $(".adicionarNaClasse").off("click");
+           $(".adicionarNaClasse").click(function (){
+                  aluno = $(this).val();            
+                  adicionarNaClasse(aluno); 
+                  $(this).addClass("disabled");                                  
+            });
+        },
+      });
+    }
+  
+    function chamarAno(){
+        const date = new Date();
+        const currentYear = date.getFullYear();
+        console.log(currentYear);
+        document.getElementById("ano").value = currentYear;
+    }
+    chamarAno();
+    sendListar();
+});
+
+</script>
+{% endblock content %}
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+

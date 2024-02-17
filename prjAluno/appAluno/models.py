@@ -1,22 +1,16 @@
 from django.db import models
+from appClasse.models import Classe
 # Create your models here.
 # Aluno
 class Aluno (models.Model):
-    PERIODO_CHOICES = (
-        ("M","MANHÃ"),
-        ("T","TARDE")
-    )
-    rm = models.AutoField(primary_key=True)
+    
+    rm = models.IntegerField(primary_key=True,)
     nome = models.CharField(max_length=150)
     #status (0 - arquivado, 1 - cancelado, 2 - ativo) 
-    cancelado = models.BooleanField(default=False) 
+    status = models.IntegerField(default=0) 
     ra = models.CharField(max_length=100, default='')
     d_ra = models.CharField(max_length=1, default='')
     data_nascimento = models.CharField(max_length=10, default='')
-    serie = models.CharField(max_length=1, default='')
-    turma = models.CharField(max_length=1, default='')
-    ano = models.CharField(max_length=4, default='')
-    periodo = models.CharField(max_length=1, choices=PERIODO_CHOICES, default='')
 
     def __str__(self):
        
@@ -26,8 +20,6 @@ class Aluno (models.Model):
     def retornarUltimo():
         aluno = Aluno.objects.last()
         return aluno
-    def retornarPeriodos():
-        return Aluno.PERIODO_CHOICES
     
     def retornarNUltimos(n=5):
         alunos = Aluno.objects.order_by('-rm')[:n]
@@ -54,21 +46,34 @@ class Telefone(models.Model):
     def retornarListaTelefones():
         return Telefone.TEL_CHOICES
 
-#Classe do ano (NÃO IMPLEMENTADO)
-class Classe(models.Model):
-    #serie
-    #turma
-    #periodo
-    #ano
-    pass
-
 #Matrícula do aluno (NÃO IMPLEMENTADO)
 class Matricula(models.Model):
-    #classe
-    #aluno
-    #numero
-    pass    
-
+    SITUACAO = (
+        ('C', 'CURSANDO'),
+        ('T', 'TRANSFERIDO'),
+        ('M', 'REMANEJADO'),
+        ('P', 'PROMOVIDO'),
+        ('R', 'REPROVADO'),
+        ('A', 'ARQUIVADA')
+    )
+    ano = models.IntegerField(blank=False, null=False, default=0)
+    classe = models.ForeignKey(Classe, on_delete=models.RESTRICT, default='')
+    aluno = models.ForeignKey(Aluno, on_delete=models.RESTRICT, default='')
+    numero = models.IntegerField(blank=False, null=False, default=0)
+    situacao = models.CharField(max_length=1, choices=SITUACAO, default='A')
+    data_matricula = models.DateField(null=True)
+    data_movimentacao = models.DateField(null=True)
+    
+    def __str__(self):
+        return f'{self.aluno} - {self.classe}' 
+    
+    class Meta:
+        unique_together = ['ano', 'aluno', 'situacao', 'data_matricula']   
+    
+    def retornarSituacao():
+        return Matricula.SITUACAO
+    
+        
 #Documentos do aluno (NÃO IMPLEMENTADO)
 class Prontuario(models.Model):
     DOCUMENTO_CHOICES = (

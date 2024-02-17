@@ -6,6 +6,7 @@
 <div class="row">
   <div class="col-12">
     <h1 class="text-center">Registro de Alunos</h1>
+    
   </div>
 </div>
 
@@ -43,6 +44,7 @@
     >
       Relatório
     </button>
+   
     <button
       id="bkp"
       class="btn btn-outline-primary m-3"
@@ -62,12 +64,10 @@
       <thead>
         <th>RM</th>
         <th>Nome</th>
-        <th>Série</th>
-        <th>Turma</th>
-        <th>Ano</th>
         <th>Telefone</th>
         <th>RA</th>
         <th>Atualizar</th>
+      
       </thead>
       <tbody id="corpoTabela">
         <!-- Tabela dinâmica aparece aqui -->
@@ -130,6 +130,16 @@
         <div class="row">
           <div class="col-12">
             <input
+              type="radio"
+              name="flexRadioDefault"
+              id="flexRadioDefault1"
+            />
+            <label for="flexRadioDefault1"> Registro de Matrícula </label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <input
               type="number"
               name="rmi"
               maxlength="150"
@@ -155,6 +165,31 @@
             />
           </div>
         </div>
+
+        <div class="row mt-3">
+          <div class="col-12">
+            <input
+              type="radio"
+              name="flexRadioDefault"
+              id="flexRadioDefault2"
+            />
+            <label for="flexRadioDefault2"> Lista Telefônica Turma </label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <input
+            type="number"
+            name="ano"
+            maxlength="4"
+            class="form-control"
+            placeholder="Ano"
+            required=""
+            id="ano"
+            min="4"
+          />
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
@@ -167,7 +202,7 @@
     </div>
   </div>
 </div>
-
+<!-- Final Modal Relatório-->
 <!-- Modal Resolução de Duplicidade-->
 <div
   class="modal fade"
@@ -245,7 +280,6 @@
             botoes_atualizar[i].addEventListener("click", function () {
               //sendAtualizar(botoes_atualizar[i].value);
               buscarAluno(botoes_atualizar[i].value);
-              document.getElementById("gravar").style.display = "none";
             });
           }
         },
@@ -347,10 +381,6 @@
       let ra = document.getElementById("raAtualizar").value;
       let dra = document.getElementById("raDigitoAtualizar").value;
       let dt_nascimento = document.getElementById("nascimentoAtualizar").value;
-      let serie = document.getElementById("serieAtualizar").value;
-      let turma = document.getElementById("turmaAtualizar").value;
-      let periodo = document.getElementById("periodoAtualizar").value;
-      let ano = document.getElementById("anoAtualizar").value;
       let telefones = document.getElementsByClassName("numTelefone");
       let contatos = document.getElementsByClassName("contato");
       let removerTelefone = document.getElementsByClassName("removerTelefone");
@@ -358,17 +388,14 @@
       let tipoContatos = [];
       let novTelefones = [];
       for (novo of removerTelefone) {
-         novTelefones.push(novo.value);
-        
+        novTelefones.push(novo.value);
       }
       for (tel of telefones) {
         numTelefones.push(tel.value);
-        
       }
 
       for (contato of contatos) {
         tipoContatos.push(contato.value);
-       
       }
 
       $.post({
@@ -382,18 +409,17 @@
           ra: ra,
           dra: dra,
           dt_nascimento: dt_nascimento,
-          serie: serie,
-          turma: turma,
-          periodo: periodo,
-          ano: ano,
           telefones: numTelefones,
           contatos: tipoContatos,
           novos_tel: novTelefones,
         },
         success: (response) => {
-          $("#gravar").click(() => sendGravar());
+          verificarRepeticao();
+          $("#gravar").off("click");
           $("#id_nome").off("keypress");
           $("#id_ra").off("keypress");
+
+          $("#gravar").click(() => sendGravar());
           $("#id_nome").keypress((event) => {
             let tecla = event.which;
             if (tecla == 13) {
@@ -409,7 +435,7 @@
           $("#id_nome").keyup(() => sendBuscar());
 
           configurarElementos(response);
-          document.getElementById("gravar").style.display = "block";
+          //document.getElementById("gravar").style.display = "block";
           //document.getElementById("atualizar2").style.display = "none";
           document.getElementById("basic-addon1").classList.add("bg-dark");
           document.getElementById("basic-addon1").classList.add("text-white");
@@ -434,6 +460,73 @@
         },
         fail: (response) => {},
       });
+    }
+
+    function sendClasses(ano) {
+       $.get({
+        url: "{% url 'classes' %}",
+        data: {
+          ano: ano
+        },
+        success: (response) => {
+            let classes = document.getElementsByClassName("matricula");
+            for(let i = 0; i < classes.length; i++) {
+                classes[i].innerHTML = response;
+            }
+            
+        },
+        fail: (response) => {},
+      });
+    }
+
+    function addMatricula() {
+     
+      let matriculaAdd = document.querySelector("#matriculas");
+      let novaMatricula =
+      
+      matriculaAdd.insertAdjacentHTML("beforeend", novaMatricula);
+      let anos = document.getElementsByClassName("ano");
+      let classes = document.getElementsByClassName("classes");
+      let anos_tamanho = anos.length;
+      for(let i=0; i < anos_tamanho; i++) {
+        anos[i].addEventListener("focusout", function(){
+         sendClasses(anos[i].value, i);
+        })
+      }
+      /* $(".ano").off();
+       $(".ano").focusout(function () {
+              //busca informação das salas de acordo com o ano e carrega
+              let classes = $(".classes"); 
+        
+              for (let i =0; i < classes.length; i++) {
+               
+              
+                if($(this).val() === "2024"){
+                  
+                     for (child of classes[i].children){
+                    child.remove();
+                  }
+                   classes[i].options[classes[i].options.length] = new Option('My option', 'My value');
+              
+                }
+                else if ($(this).val() === "2023") {
+                    for (child of classes[i].children){
+                    child.remove();
+                  }
+                                     classes[i].options[classes[i].options.length] = new Option('My option2', 'My value2');
+
+                }
+                
+            
+
+              }
+            
+          });*/
+    }
+
+    
+    function delMatricula() {
+
     }
 
     function delTelefone() {
@@ -473,7 +566,7 @@
                   <option value="R">RESPONSÁVEL</option>\
                   <option value="O">OUTRO</option>\
                     </select>\
-                   <button type="button" class="btn btn-danger m-1 removerTelefone" value="0">X</button>\
+                   <button type="button" class="btn btn-danger m-1 removerTelefone" value="0"><i class="bi bi-telephone-minus"></i></button>\
                 </div>';
       telefoneAdd.insertAdjacentHTML("beforeend", novoTelefone);
     }
@@ -509,13 +602,19 @@
           $("#simAtualizar").click(() => {
             sendAtualizar($("#simAtualizar").val());
           });
-            delTelefone();
+          delTelefone();
           //adicionar telefone quando clica no +
           $("#addTelefone").click(() => {
             //alert("ola telefone");
             addTelefone();
             delTelefone();
           });
+          $("#addMatricula").click(() => {
+            addMatricula();
+          });
+
+          
+          preencherAutomatico();
         },
         fail: (response) => {},
       });
