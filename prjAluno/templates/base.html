@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta
       name="viewport"
-      content="width=device-width,initial-scale=1,user-scalable=no,minimal-ui"
+      content="width=device-width,initial-scale=1,minimal-ui"
     />
 
     <meta name="description" content="Aplicação web para cadastrar alunos" />
@@ -29,6 +29,7 @@
   </head>
 
   <body id="Conteudo">
+  
     <button
       class="btn btn-large waves-effect waves-light black"
       id="aumentarLetra"
@@ -48,17 +49,24 @@
       data-bs-toggle="modal"
       data-bs-target="#configuracoesModal"
     >
-      <i class="bi bi-gear-fill"></i>
+      <i class="bi bi-gear-fill" ></i>
     </button>
+    
+    <div class="row">
+        <div class="col-12 text-center">
+          <strong class="bg-dark p-2 mt-2 rounded-3"><i id="ano" class="bi bi-calendar text-warning m-lg-5" style="font-size:27px"></i> </strong>
+         </div>
+    </div>
+
     <div class="container">
     <div class="row">
-    <div class="col-1">
+    <div class="col-sm-1">
     <a href = {% url 'inicial' %}>Alunos</a>
     </div>
-    <div class="col-1">
+    <div class="col-sm-1">
     <a href = {% url 'classe' %}>Classes </a>
     </div>
-    <div class="col-1">
+    <div class="col-sm-1">
     <a href = {% url 'matricula' %}> Matriculas </a>
     </div>
     </div>
@@ -78,17 +86,13 @@
             <h5 class="modal-title" id="configuracoesModalLabel">
               Configurações
             </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+           
           </div>
           <div class="modal-body">
-            <div id="configuracoes" class="row">
+            <div id="configuracoes">
               <!-- Configuracoes -->
-              <div>
+              <div class="row">
+              <div class="col-12">
                 <input
                   class="form-check-input"
                   type="checkbox"
@@ -98,6 +102,22 @@
                 <label for="preenchimentoAutomatico">
                   Preenchimento automático por repetição
                 </label>
+                </div>
+              </div>
+               <div class="row mt-2">
+              <div class="col-4">
+              </div>
+              <div class="col">
+                <input
+                  class="form-control formulario"
+                  type="number"
+                  value=""
+                  id="anoConfig"
+                  placeholder="Ano"
+                />
+                </div>
+                <div class="col-4">
+              </div>
               </div>
             </div>
           </div>

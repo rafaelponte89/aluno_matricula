@@ -8,26 +8,7 @@
   </div>
 </div>
 
-<div id="classe" class="row mt-2 bg-body-secondary rounded-3">
-
-  <div class="col-sm-3 p-3">
-    <div class="input-group">
-      <div class="input-group-prepend">
-        <span class="input-group-text bg-dark text-white" id="basic-addon1"
-          ><i class="bi bi-search"></i
-        ></span>
-      </div>
-
-      <input
-        type="number"
-        id="ano"
-        placeholder="Ano"
-        class="form-control formulario"
-        aria-describedby="basic-addon1"
-      />
-    </div>
-  </div>
-  
+<div id="classe" class="row mt-2 bg-body-secondary rounded-3">  
  
   <div class="col-sm-2 p-3">
     <select
@@ -60,9 +41,9 @@
         <th>Nº</th>
         <th>Nome</th>
         <th>Situação</th>
-        <th>Transferir</th>
-        <th>Remanejar </th>
-        <th>Arquivar</th>
+        <th class='text-center'>Transferir</th>
+        <th class='text-center'>Remanejar </th>
+        <th class='text-center'>Excluir</th>
       
       </thead>
       <tbody id="corpoTabela">
@@ -96,7 +77,7 @@
         ></button>
       </div>
       <div class="modal-body">
-        <input type="hidden" id="matricula" />
+       
         <div id="dadosMatricula" class="row">
           <!-- Dados do Registro Aqui -->
         </div>
@@ -120,26 +101,98 @@
 <!-- Fim Modal Atualizar Registro-->
 
 
+<!-- Modal Remanejar-->
+<div
+  class="modal fade"
+  id="remanejarModal"
+  tabindex="-1"
+  aria-labelledby="remanejarModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="remanejarModalLabel">
+          Vai remanejar o aluno? Então nos informe a classe e data!
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+     
+        <div id="dadosRemanejamento" class="row">
+          <!-- Dados do Registro Aqui -->
+         
+        </div>
+
+        <div class="row">
+           <div class="col">
+          <select id="classesRemanejamento" class="form-control formulario">
+
+          </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer mt-2">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button
+                        id="simRemanejar"
+                        type="button"
+                        class="btn btn-primary"
+                        data-bs-dismiss="modal"
+                    >
+                        Remanejar
+                    </button>
+                    </div>
+    </div>
+  </div>
+</div>
+<!-- Fim Modal Remanejar Matricula-->
+
 <script type="text/javascript">
+
 $(document).ready(() => {
-
-
     function carregarClasses(ano) {
         $.get({
             url: "{% url 'carregarclasses' %}",
             data: {
                 ano: ano
-
             },
             success: (response) =>{
                 $("#classes").html(response);
+                $("#classesRemanejamento").html(response);
             },
             fail: () =>{
 
             }
         })
     }
+    
+    function excluirMatricula(matricula) {
+      $.get({
+        url: "{% url 'excluirmatricula' %}",
+        data: {
+          matricula: matricula
+        },
+        success: (response) => {
+        $("#mensagens").html(response);
+                 setTimeout(function () {
+                 $("#mensagem").css("display", "none");
+                }, 3000);
+            carregarMatriculas($("#classes").val());
 
+        },
+        fail: (response) => {
+
+        }
+      })
+    }
     function carregarMatriculas(classe) {
         $.get({
             url: "{% url 'carregarmatriculas' %}",
@@ -149,15 +202,28 @@ $(document).ready(() => {
             success: (response) => {
                 $("#corpoTabela").html(response);
                 $(".transferir").off('click');
-                 $(".transferir").click(function (){
+                $(".transferir").click(function (){
                   matricula = $(this).val();
               
                   buscarMatricula(matricula);                               
-            });
+               });
+                $(".remanejar").off('click');
+                $(".remanejar").click(function (){
+                  matricula = $(this).val();
+              
+                  buscarMatricula(matricula);                               
+               });
+
+                  $(".excluir").off('click');
+                $(".excluir").click(function (){
+                  matricula = $(this).val();
+              
+                  excluirMatricula(matricula);                               
+               });
 
             },
-            fail: () => {
-
+            fail: (response) => {
+               
             }
         })
     }
@@ -169,7 +235,28 @@ $(document).ready(() => {
                 classe: classe
             },
             success: (response) => {
+
                 $("#corpoTabela").html(response);
+                  $(".transferir").off('click');
+                
+                $(".transferir").click(function (){
+                  matricula = $(this).val();
+              
+                  buscarMatricula(matricula);                               
+               });
+                $(".remanejar").off('click');
+                $(".remanejar").click(function (){
+                  matricula = $(this).val();
+              
+                  buscarMatricula(matricula);                               
+               });
+
+                $(".excluir").off('click');
+                $(".excluir").click(function (){
+                  matricula = $(this).val();
+              
+                  excluirMatricula(matricula);                               
+               });
             },
             fail: () => {
 
@@ -194,6 +281,25 @@ $(document).ready(() => {
             fail: (response) => {}
         })
     }
+
+    function sendRemanejar() {
+        $.get({
+            url: "{% url 'remanejar' %}",
+            data: {
+                matricula: matricula,
+                data_movimentacao: $("#dataMovimentacao").val(),
+                classe_remanejamento: $("#classesRemanejamento").val()
+            },
+            success: (response) => {
+                     $("#mensagens").html(response);
+                 setTimeout(function () {
+                 $("#mensagem").css("display", "none");
+                }, 3000);
+                carregarMatriculas($("#classes").val());
+            },
+            fail: (response) => {}
+        })
+    }
      // buscar matricula
     function buscarMatricula(matricula){
 
@@ -205,9 +311,18 @@ $(document).ready(() => {
             success: (response) => {
                 $("#simTransferir").off("click");
                 $("#simDeletar").off("click");
+                $("#simRemanejar").off("click");
+               
+                
                 $("#dadosMatricula").html(response);
-                  $("#simTransferir").click( function (){
+                $("#dadosRemanejamento").html(response);
+                $("#simTransferir").click( function (){
+                  $("#dadosRemanejamento").empty();
                     sendTransferir();
+                  });
+                $("#simRemanejar").click( function (){
+                   $("#dadosMatricula").empty();
+                    sendRemanejar();
                   });
                  
             },
@@ -215,20 +330,24 @@ $(document).ready(() => {
         });
     }
 
-    $("#ano").focusout(() => {
-        carregarClasses($("#ano").val());
-    });
+    carregarClasses($("#ano").html());
+     
+    $("#salvarConfig").click(() => 
+    {
 
+            carregarClasses($("#ano").html());
+
+
+    });
     $("#classes").change(() => {
+     
         carregarMatriculas($("#classes").val());
+    
     });
 
     $("#alfabetica").click(() => {
         ordemAlfabetica($("#classes").val());
     });
-
-
-
 });
 
 

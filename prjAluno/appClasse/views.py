@@ -38,10 +38,7 @@ def buscar(request):
                     <input type='hidden' id='codClasse' value={classe.id} />
                     <div class='row'>
                     
-                    <div class='col form-group'>
-                    <label for='anoAtualizar'>Ano</label>
-                    <input id='anoAtualizar' class='form-control' type='number' value={classe.ano} \>
-                    </div>
+                  
                     
                     <div class='col form-group'> 
                     <label for='serieAtualizar'>Série</label>
@@ -246,7 +243,7 @@ def exibirTelaMatricula(request):
                     </div>   
                     <div class='col-5 form-group'> 
                     <label for='dataMatricula'>Data da Matrícula</label>
-                    <input id='dataMatricula' class='form-control repeticao' type='date' value='{datetime.now().strftime("%Y-%m-%d")}'\>
+                    <input id='dataMatricula' class='form-control' type='date' value='{datetime.now().strftime("%Y-%m-%d")}'\>
                     </div>               
                     </div>
                     <div class='row'>

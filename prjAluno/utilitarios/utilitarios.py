@@ -2,6 +2,9 @@ from django.shortcuts import HttpResponse
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from datetime import datetime
+
+
+
 def criarMensagem(texto, tipo):
         
     mensagem = HttpResponse(f"<div style='display:block;' id='mensagem' class='alert alert-{tipo}' role='alert' >{texto} </div>")

@@ -1,9 +1,25 @@
 function verificarConfiguracao() {
+  
   if (localStorage.getItem("automatico")) {
     autoPreenchimento.checked = true;
   } else {
     autoPreenchimento.checked = false;
   }
+
+  if (localStorage.getItem("anoConfig")) {
+    document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
+    document.getElementById("anoConfig").value = localStorage.getItem("anoConfig");
+
+  }
+  else {
+    const date = new Date();
+    const currentYear = date.getFullYear();
+    localStorage.setItem("anoConfig",currentYear);
+    document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
+    document.getElementById("anoConfig").value = localStorage.getItem("anoConfig");
+
+  }
+ 
 }
 
 function limparStorage() {
@@ -15,6 +31,7 @@ function limparStorage() {
   }
   localStorage.removeItem("repeticao");
 }
+
 function limparStorage_antiga() {
   localStorage.removeItem("serie");
   localStorage.removeItem("periodo");
@@ -26,6 +43,7 @@ function limparStorage_antiga() {
   localStorage.removeItem("anoAnt");
   localStorage.removeItem("repeticao");
 }
+
 
 //versão 1 estática
 function preencherAutomatico2() {
@@ -57,7 +75,7 @@ function preencherAutomatico() {
   }
 }
 
-// Identifica campos a serem repetidos por uma classe
+// Identifica campos a serem repetidos através da  classe
 // Nova versão 15012024 dinâmica
 function verificarRepeticao() {
   if (localStorage.getItem("automatico") === "true") {
@@ -156,8 +174,21 @@ function verificarRepeticao2() {
 
 var salvarConfig = document.getElementById("salvarConfig");
 var autoPreenchimento = document.getElementById("preenchimentoAutomatico");
+var anoConfig = document.getElementById("anoConfig");
 
+//quando clica no botão salvar de configuração
 salvarConfig.addEventListener("click", function () {
+  
+  if(anoConfig.value !== '') {
+    localStorage.setItem("anoConfig", anoConfig.value);
+    document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
+  }
+  else {
+    const date = new Date();
+    const currentYear = date.getFullYear();
+    localStorage.setItem("anoConfig", currentYear);
+    document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
+  }
   if (autoPreenchimento.checked) {console.log("automatico");
     localStorage.setItem("automatico", true);
     
@@ -166,5 +197,8 @@ salvarConfig.addEventListener("click", function () {
    
     limparStorage();
   }
+  verificarConfiguracao();
 });
+
+
 verificarConfiguracao();

@@ -16,23 +16,6 @@
   <!--   <label class="btn btn-outline-success  m-3" for="success-outlined" title="Pesquisar"><i class="bi bi-search"></i>-->
 
   <div class="col-sm-2 p-3">
-    <div class="input-group">
-      <div class="input-group-prepend">
-        <span class="input-group-text bg-dark text-white" id="basic-addon1"
-          ><i class="bi bi-search"></i
-        ></span>
-      </div>
-
-      <input
-        type="number"
-        id="ano"
-        placeholder="Ano"
-        class="form-control formulario"
-        aria-describedby="basic-addon1"
-      />
-    </div>
-  </div>
-  <div class="col-sm-2 p-3">
     <input
       type="number"
       id="serie"
@@ -350,7 +333,7 @@ $(function(){
         $.get({
             url: "{% url 'atualizarclasse' %}",
             data: {
-                ano: $("#anoAtualizar").val(),
+                ano: $("#ano").html(),
                 classe: $("#codClasse").val(),
                 serie: $("#serieAtualizar").val(),
                 turma: $("#turmaAtualizar").val(),
@@ -376,7 +359,7 @@ $(function(){
         $.get({
           url: "{% url 'adicionarNaClasse' %}",
           data: {
-            ano: $("#ano").val(),
+            ano: $("#ano").html(),
             classe: $("#codClasse").val(),
             aluno: aluno,
             data_matricula: $("#dataMatricula").val()
@@ -398,7 +381,7 @@ $(function(){
         $.get({
         url: "{% url 'gravarclasse' %}",
         data: {
-            ano: $("#ano").val(),
+            ano: $("#ano").html(),
             serie: $("#serie").val(),
             turma: $("#turma").val().toUpperCase(),
             periodo: $("#periodo").val()
@@ -411,7 +394,7 @@ $(function(){
             sendListar();
             verificarRepeticao();
             $(":input").val('');
-            chamarAno();
+          
             preencherAutomatico();
         },
         fail: (response) => {},
@@ -422,7 +405,7 @@ $(function(){
         $.get({
         url: "{% url 'listarclasse' %}",
         data: {
-            ano: $("#ano").val(),
+            ano: $("#ano").html(),
         },
         success: (response) => {
             $("#corpoTabela").html(response);
@@ -451,12 +434,14 @@ $(function(){
       });
     }
 
-    $("#ano").focusout(() => {
-      sendListar();
-    });
+  
    
     $("#gravar").click(()=> {
         sendGravar();
+        sendListar();
+    });
+
+    $("#salvarConfig").click(() => {
         sendListar();
     });
 
@@ -481,13 +466,6 @@ $(function(){
       });
     }
   
-    function chamarAno(){
-        const date = new Date();
-        const currentYear = date.getFullYear();
-        console.log(currentYear);
-        document.getElementById("ano").value = currentYear;
-    }
-    chamarAno();
     sendListar();
 });
 
