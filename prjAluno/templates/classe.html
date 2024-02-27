@@ -156,7 +156,10 @@
       </div>
       <div class="row">
       <div class="col-md-2"> </div>
-      <div id="aviso" class="col-md-8 mt-1"> </div>
+      <div id="mensagensModal" class="col-md-8 mt-1">
+
+
+       </div>
       <div class="col-md-2"> </div>
 
       </div>
@@ -360,14 +363,14 @@ $(function(){
           url: "{% url 'adicionarNaClasse' %}",
           data: {
             ano: $("#ano").html(),
-            classe: $("#codClasse").val(),
+            classe: $("#codClasseMatricula").val(),
             aluno: aluno,
             data_matricula: $("#dataMatricula").val()
           },
           success: (response) => {
-             $("#aviso").html(response);
+             $("#mensagensModal").html(response);
             setTimeout(function () {
-             $("#mensagem").css("display", "none");
+             $("#mensagemModal").css("display", "none");
             }, 3000);
               
           },
@@ -389,7 +392,7 @@ $(function(){
         success: (response) => {
             $("#mensagens").html(response);
             setTimeout(function () {
-             $("#mensagem").css("display", "none");
+             $("#mensagens").empty();
             }, 3000);
             sendListar();
             verificarRepeticao();

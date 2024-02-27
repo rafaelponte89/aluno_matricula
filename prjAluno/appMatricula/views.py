@@ -185,9 +185,10 @@ def verificar_matricula_ativa_no_ano(ano, rm, situacao='C'):
     try:
         matricula = Matricula.objects.filter(Q(ano=ano) & Q(aluno_id=rm) & Q(situacao=situacao))
         if len(matricula) == 0:
-            print(len(matricula))
+            print('sem matricula')
             return True
         else:
+            print('com matricula')
             return False
         
     except Exception as e:
@@ -213,13 +214,14 @@ def upload_matriculas(request):
         
         for matricula in matriculas:
             matricula.delete()
-        
+       
         for linha in range(3, len(linhas)):
             linhas_array.append(linhas[linha].split(';'))
-        
-        for linha in range(len(linhas_array)-1):            
-            rm = Aluno.objects.filter(ra=int(linhas_array[linha][4])).values('rm')[0:1]
-        
+    
+        for linha in range(len(linhas_array)-1):  
+            ra = int(linhas_array[linha][4])         
+            rm = Aluno.objects.filter(ra=ra).values('rm')[:1]
+
             for cod in rm:
                 aluno = Aluno.objects.get(pk=cod['rm'])
 
@@ -228,14 +230,9 @@ def upload_matriculas(request):
                                     situacao=situacao, 
                                     data_matricula=data_matricula, numero=numero)
                 
-                if (verificar_matricula_ativa_no_ano(ano, matricula.aluno_id)):
-                    print("sem matricula")
-                    matricula.save()
-                else:
-                    print("com matricula")
+                if (verificar_matricula_ativa_no_ano(ano, aluno.rm)):
+                    matricula.save()                
                 
-                
-        
         return HttpResponse(carregar_linhas(classe))
     except Exception as e:
         print(e)

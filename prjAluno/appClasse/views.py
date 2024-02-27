@@ -5,7 +5,7 @@ from appAluno.models import Matricula
 from django.shortcuts import HttpResponse
 from datetime import datetime
 from django.db.models import Q
-from utilitarios.utilitarios import criarMensagem
+from utilitarios.utilitarios import criarMensagem, criarMensagemModal
 from appMatricula.views import verificar_matricula_ativa_no_ano
 # Create your views here.
 
@@ -187,13 +187,13 @@ def adicionarNaClasse(request):
             aluno.status = 2
             aluno.save()
             matricula.save()
-            return criarMensagem("Matrícula Efetuada", "success")
+            return criarMensagemModal("Matrícula Efetuada", "success")
         else:
-            return criarMensagem("Com Matrícula Ativa no Ano!!!", "danger")
+            return criarMensagemModal("Com Matrícula Ativa no Ano!!!", "danger")
 
     except Exception as error:    
         print(error)
-        return criarMensagem("Erro ao efetuar a Matrícula", "danger")
+        return criarMensagemModal("Erro ao efetuar a Matrícula", "danger")
 
 
 def exibirTurma(request):
@@ -241,7 +241,7 @@ def exibirTelaMatricula(request):
             
     tela = f"""<form>
                     <h5 class='bg-body-secondary d-flex rounded-5 justify-content-center p-2'><strong>{classe.serie}º{classe.turma} - {periodo} </strong></h5>
-                    <input type='hidden' id='codClasse' value={classe.id} />
+                    <input type='hidden' id='codClasseMatricula' value={classe.id} />
                     <div class='row'>
                     <div class='col form-group'>
                     <label for='nomeAluno'>Nome</label>
