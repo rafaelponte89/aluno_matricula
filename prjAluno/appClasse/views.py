@@ -2,6 +2,7 @@ from django.shortcuts import render
 from .models import Classe
 from appAluno.models import Aluno
 from appAluno.models import Matricula
+from appMatricula.views import verificar_matricula_ativa_no_ano
 from django.shortcuts import HttpResponse
 from datetime import datetime
 from django.db.models import Q
@@ -181,10 +182,14 @@ def adicionarNaClasse(request):
         matricula.data_matricula = request.GET.get('data_matricula')
         matricula.situacao = 'C'
         aluno.status = 2
-        aluno.save()
-        matricula.save()
-        return criarMensagem("Matrícula Efetuada", "success")
-    
+        
+        if (verificar_matricula_ativa_no_ano(matricula.ano, aluno.rm)):
+            aluno.save()
+            matricula.save()
+            return criarMensagem("Matrícula Efetuada", "success")
+        else:
+            return criarMensagem("Aluno já possui Matrícula Ativa no ano!!!", "danger")
+
     except Exception as error:    
         print(error)
         return criarMensagem("Erro ao efetuar a Matrícula", "danger")

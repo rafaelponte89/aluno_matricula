@@ -1,7 +1,8 @@
 from django.urls import path
 from .views import (adicionar, transferir, deletar, matricula, 
                     ordernar_alfabetica, carregar_classes, carregar_matriculas,
-                    buscar_matricula, excluir_matricula, remanejar)
+                    buscar_matricula, excluir_matricula, remanejar,
+                    upload_matriculas)
 
 urlpatterns = [
     path('matricula', matricula, name='matricula'),
@@ -14,5 +15,6 @@ urlpatterns = [
     path('buscarMatricula', buscar_matricula, name='buscarmatricula'),
     path('excluirMatricula', excluir_matricula, name='excluirmatricula'),
     path('remanejar', remanejar, name='remanejar'),
+    path('uploadMatriculas', upload_matriculas, name='uploadmatriculas'),
 
 ]

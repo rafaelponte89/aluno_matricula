@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
 from appClasse.models import Classe
+from appAluno.models import Aluno
 from appAluno.models import Matricula
+from django.db.models import Q
 from utilitarios.utilitarios import criarMensagem
-from appClasse.views import adicionarNumeroChamada
+#from appClasse.views import adicionarNumeroChamada
 # Create your views here.
 
 
@@ -176,4 +178,66 @@ def carregar_matriculas(request):
     linhas = carregar_linhas(classe, 'numero')
     
     return HttpResponse(linhas)
-    
+
+
+# Verificar se existe matrícula ativa no ano, se não possuir pode matricular
+# Se possuir não pode
+def verificar_matricula_ativa_no_ano(ano, rm, situacao='C'):
+    try:
+        matricula = Matricula.objects.filter(Q(ano=ano) & Q(aluno_id=rm) & Q(situacao=situacao))
+        if len(matricula) == 0:
+            print(len(matricula))
+            return True
+        else:
+            return False
+        
+    except Exception as e:
+        print(e)
+        
+        
+# EM DESENVOLVIMENTO 26/02/2024
+# modulo que efetuará todas as matrículas através de uma arquivo csv do próprio SED
+def upload_matriculas(request):
+    try:
+        matriculas = request.GET.get('matriculas')
+        cod_byte = matriculas.encode('utf-8')
+        cod_str = cod_byte.decode('utf-8')
+        linhas = cod_str.split('\n')
+        linhas_array = []
+        classe = int(request.GET.get('classe'))
+        classe = Classe.objects.get(pk=classe)
+        ano = request.GET.get('ano')
+        situacao = 'C'
+        data_matricula = request.GET.get('data_matricula')
+        
+        matriculas = Matricula.objects.filter(classe=classe)
+        
+        for matricula in matriculas:
+            matricula.delete()
+        
+        for linha in range(3, len(linhas)):
+            linhas_array.append(linhas[linha].split(';'))
+        
+        for linha in range(len(linhas_array)-1):            
+            rm = Aluno.objects.filter(ra=int(linhas_array[linha][4])).values('rm')[0:1]
+        
+            for cod in rm:
+                aluno = Aluno.objects.get(pk=cod['rm'])
+
+                numero = adicionarNumeroChamada(classe)
+                matricula = Matricula(ano=ano, classe=classe, aluno=aluno, 
+                                    situacao=situacao, 
+                                    data_matricula=data_matricula, numero=numero)
+                
+                if (verificar_matricula_ativa_no_ano(ano, matricula.aluno_id)):
+                    print("sem matricula")
+                    matricula.save()
+                else:
+                    print("com matricula")
+                
+                
+        
+        return HttpResponse(carregar_linhas(classe))
+    except Exception as e:
+        print(e)
+        
