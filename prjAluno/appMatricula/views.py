@@ -28,12 +28,14 @@ def remanejar(request):
         classe = Classe.objects.get(pk=request.GET.getlist('classe_remanejamento')[0])
         matricula.situacao = 'M'
         matricula.data_movimentacao = request.GET.get('data_movimentacao')
+        matricula.ano = request.GET.get('ano')
         matricula.save()
         matricula_nova = Matricula()
         matricula_nova.classe = classe
         matricula_nova.aluno = matricula.aluno
         matricula_nova.numero = Classe.retornarProximoNumeroClasse(Matricula, classe)
         matricula_nova.situacao = 'C'
+        matricula_nova.ano = request.GET.get('ano')
         matricula_nova.classe = classe
         matricula_nova.data_matricula = matricula.data_movimentacao
         matricula_nova.save()
@@ -47,6 +49,7 @@ def remanejar(request):
 def transferir(request):
     try:
         matricula = Matricula.objects.get(pk=request.GET.get('matricula'))
+        matricula.ano = request.GET.get('ano')
         matricula.situacao = 'T'
         matricula.data_movimentacao = request.GET.get('data_movimentacao')
         matricula.save()
@@ -183,9 +186,9 @@ def carregar_matriculas(request):
 # Se possuir não pode
 def verificar_matricula_ativa_no_ano(ano, rm, situacao='C'):
     try:
-        matricula = Matricula.objects.filter(Q(ano=ano) & Q(aluno_id=rm) & Q(situacao=situacao))
-        if len(matricula) == 0:
-            print('sem matricula')
+        matriculas = Matricula.objects.filter(Q(ano=ano) & Q(aluno_id=rm) & Q(situacao=situacao))  
+        if len(matriculas) == 0:
+            print('sem matricula') 
             return True
         else:
             print('com matricula')
@@ -224,16 +227,17 @@ def upload_matriculas(request):
 
             for cod in rm:
                 aluno = Aluno.objects.get(pk=cod['rm'])
-
-                numero = Classe.retornarProximoNumeroClasse(Matricula, classe)
-                matricula = Matricula(ano=ano, classe=classe, aluno=aluno, 
-                                    situacao=situacao, 
-                                    data_matricula=data_matricula, numero=numero)
                 
                 if (verificar_matricula_ativa_no_ano(ano, aluno.rm)):
+                    numero = Classe.retornarProximoNumeroClasse(Matricula, classe)
+                    matricula = Matricula(ano=ano, classe=classe, aluno=aluno, 
+                                    situacao=situacao, 
+                                    data_matricula=data_matricula, numero=numero)
+            
                     matricula.save()                
                 
         return HttpResponse(carregar_linhas(classe))
+    
     except Exception as e:
-        print(e)
+        return HttpResponse(carregar_linhas(0))
         

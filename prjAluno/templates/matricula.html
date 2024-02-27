@@ -268,7 +268,8 @@ $(document).ready(() => {
             url: "{% url 'transferir' %}",
             data: {
                 matricula: matricula,
-                data_movimentacao: $("#dataMovimentacao").val()
+                data_movimentacao: $("#dataMovimentacao").val(),
+                ano: $("#ano").html()
             },
             success: (response) => {
                      $("#mensagens").html(response);
@@ -287,7 +288,8 @@ $(document).ready(() => {
             data: {
                 matricula: matricula,
                 data_movimentacao: $("#dataMovimentacao").val(),
-                classe_remanejamento: $("#classesRemanejamento").val()
+                classe_remanejamento: $("#classesRemanejamento").val(),
+                ano: $("#ano").html()
             },
             success: (response) => {
                      $("#mensagens").html(response);
