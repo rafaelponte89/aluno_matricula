@@ -2,11 +2,11 @@ from django.shortcuts import render
 from .models import Classe
 from appAluno.models import Aluno
 from appAluno.models import Matricula
-from appMatricula.views import verificar_matricula_ativa_no_ano
 from django.shortcuts import HttpResponse
 from datetime import datetime
 from django.db.models import Q
 from utilitarios.utilitarios import criarMensagem
+from appMatricula.views import verificar_matricula_ativa_no_ano
 # Create your views here.
 
 
@@ -164,6 +164,7 @@ def buscarAluno(request):
     return HttpResponse(linhas)  
 
 
+
 def adicionarNumeroChamada(classe):
     matriculas = Matricula.objects.filter(classe=classe)
     numero = len(matriculas) + 1
@@ -172,23 +173,23 @@ def adicionarNumeroChamada(classe):
         
 def adicionarNaClasse(request):
     try:
-        classe = Classe.objects.get(pk=request.GET.get('classe'))
+        classe = Classe.objects.get(pk=request.GET.get('classe'))       
         aluno = Aluno.objects.get(pk=request.GET.get('aluno'))
         matricula = Matricula()
         matricula.ano = request.GET.get('ano')
-        matricula.classe = classe
-        matricula.numero = adicionarNumeroChamada(classe)
-        matricula.aluno = aluno
-        matricula.data_matricula = request.GET.get('data_matricula')
-        matricula.situacao = 'C'
-        aluno.status = 2
         
         if (verificar_matricula_ativa_no_ano(matricula.ano, aluno.rm)):
+            matricula.classe = classe
+            matricula.numero = Classe.retornarProximoNumeroClasse(Matricula, classe)
+            matricula.aluno = aluno
+            matricula.data_matricula = request.GET.get('data_matricula')
+            matricula.situacao = 'C'
+            aluno.status = 2
             aluno.save()
             matricula.save()
             return criarMensagem("Matrícula Efetuada", "success")
         else:
-            return criarMensagem("Aluno já possui Matrícula Ativa no ano!!!", "danger")
+            return criarMensagem("Com Matrícula Ativa no Ano!!!", "danger")
 
     except Exception as error:    
         print(error)

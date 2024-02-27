@@ -5,7 +5,6 @@ from appAluno.models import Aluno
 from appAluno.models import Matricula
 from django.db.models import Q
 from utilitarios.utilitarios import criarMensagem
-#from appClasse.views import adicionarNumeroChamada
 # Create your views here.
 
 
@@ -33,7 +32,7 @@ def remanejar(request):
         matricula_nova = Matricula()
         matricula_nova.classe = classe
         matricula_nova.aluno = matricula.aluno
-        matricula_nova.numero = adicionarNumeroChamada(classe)
+        matricula_nova.numero = Classe.retornarProximoNumeroClasse(Matricula, classe)
         matricula_nova.situacao = 'C'
         matricula_nova.classe = classe
         matricula_nova.data_matricula = matricula.data_movimentacao
@@ -224,7 +223,7 @@ def upload_matriculas(request):
             for cod in rm:
                 aluno = Aluno.objects.get(pk=cod['rm'])
 
-                numero = adicionarNumeroChamada(classe)
+                numero = Classe.retornarProximoNumeroClasse(Matricula, classe)
                 matricula = Matricula(ano=ano, classe=classe, aluno=aluno, 
                                     situacao=situacao, 
                                     data_matricula=data_matricula, numero=numero)
