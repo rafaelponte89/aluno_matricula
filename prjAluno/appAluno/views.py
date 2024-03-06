@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
-from .models import Aluno, Telefone, Matricula
-from .models import Classe
+from .models import Aluno, Telefone
+from appClasse.models import Classe
+from appMatricula.models import Matricula
 from .forms import frmAluno
 from django.contrib import messages
 from django.http import HttpResponse
@@ -92,7 +93,13 @@ def retornar_numeros_telefones(aluno):
     
     return texto_numeros
     
-
+def retornar_ultima_matricula_ativa(aluno):
+    ultima_matricula = Matricula.objects.filter(aluno=aluno).order_by('ano')
+    ultima = ''
+    for mat in ultima_matricula:
+        ultima = mat.classe
+    return ultima
+    
 def atualizarTabela(alunos):
     nomes_duplicados = buscar_duplicados(alunos)
     tabela = ''
@@ -123,7 +130,7 @@ def atualizarTabela(alunos):
             
         tabela += f"""<tr> {status_rm}
                     <td class="align-middle">{aluno.nome}</td> 
-                       
+                        <td class="align-middle text-center"> {retornar_ultima_matricula_ativa(aluno)} </td>
                         <td class="align-middle text-center">{retornar_numeros_telefones(aluno)}</td> 
                         <td class="align-middle text-center">{aluno.ra} </td> 
                         
@@ -209,7 +216,7 @@ def buscar_dados_aluno(request):
     telefones = Telefone.retornarListaTelefones()
     matriculas = Matricula.retornarSituacao()
     telefones_aluno = Telefone.objects.filter(aluno=aluno)
-    matriculas_aluno = Matricula.objects.filter(aluno=aluno)
+    matriculas_aluno = Matricula.objects.filter(aluno=aluno).order_by('ano')
     selecionado = ""    
     
     def retornar_telefone( telefones_aluno):  
@@ -255,22 +262,32 @@ def buscar_dados_aluno(request):
                     </select> 
                    <button type="button" class="btn btn-danger m-1 removerTelefone" value="{telefones_aluno[i].id}"><i class="bi bi-telephone-minus"></i></button> 
                 </div>"""
+                
     dados_matricula = ""
     for i in range(len(matriculas_aluno)):  
         dados_matricula += f"""
                    <div class="col-12 form-group d-flex align-items-center"> 
                   <input        
-                    type="number"     
-                    class="form-control numTelefone p-2" 
-                    id="telefoneAtualizar" 
+                    type="text"     
+                    class="form-control p-2" 
+                   
                     aria-describedby="emailHelp" 
                     placeholder="Ano" 
                     value="{matriculas_aluno[i].ano}"
+                    disabled
                   /> 
-                      <select class="form-select m-3 contato" aria-label="Default select example" id=periodoAtualizar> 
+                      <select class="form-select m-3" aria-label="Default select example" disabled> 
                         {retornar_matricula(matriculas_aluno[i])}
                     </select> 
-                   <button type="button" class="btn btn-danger m-1 removerTelefone" value="{matriculas_aluno[i].id}"><i class="bi bi-journal-minus"></i></button> 
+                      <input        
+                    type="text"     
+                    class="form-control p-2" 
+                    
+                    aria-describedby="emailHelp" 
+                    placeholder="Ano" 
+                    value="{matriculas_aluno[i].classe}"
+                    disabled
+                  /> 
                 </div>"""
         
     dados = f"""<form id="cadastroAluno"> 
@@ -345,6 +362,7 @@ def buscar_dados_aluno(request):
             <div class="row mb-2" id="matriculas">
                    {dados_matricula}
             </div>
+            
              <div class="row">
                <div class="col-1 form-group d-flex">
                   <button id="addTelefone" type="button" class="btn btn-primary mt-3"><i class="bi bi-telephone-plus"></i></button>
@@ -373,28 +391,17 @@ def buscar_dados_aluno(request):
 
 
 #versao 1
-def buscar_dados_aluno_2(request):
+def buscar_dados_aluno_1(request):
     rm = request.POST.get('rm')
     print("RM", rm)
     aluno = Aluno.objects.get(pk=rm)
+   
     #telefone = Telefone()
-  
-    periodos = Aluno.retornarPeriodos()
     telefones = Telefone.retornarListaTelefones()
     telefones_aluno = Telefone.objects.filter(aluno=aluno)
     selecionado = "" 
    
-    opcoes_periodo = f"<option {selecionado}> Selecione </option>"
-   
     print("Telefones",telefones_aluno)
-    for i in range(len(periodos)):
-        sigla, periodo = periodos[i]
-        if aluno.periodo == sigla:
-            selecionado = "selected"
-            opcoes_periodo += f"""<option value={sigla} {selecionado}>{periodo}</option>"""
-        else:
-            selecionado = ""
-            opcoes_periodo += f"""<option value='{sigla}' {selecionado}>{periodo}</option>"""
     
     def retornar_telefone( telefones_aluno):  
         selecionado_tel = ""     
@@ -567,13 +574,17 @@ def buscarRM(request):
        
        
 def atualizar(request):
+    print(request.POST.get("nome"))
     nome = padronizar_nome(request.POST.get("nome").lstrip().rstrip())
     ra = request.POST.get("ra")
     dra = request.POST.get("dra").upper()
     dt_nascimento = request.POST.get("dt_nascimento")
     telefones = request.POST.getlist("telefones[]")
+    print("telefones",telefones)
     contatos = request.POST.getlist("contatos[]")
+    print("contato",contatos)
     novos_tel = request.POST.getlist("novos_tel[]")
+    print("novos_tel",novos_tel)
         
     tamanho_ra = len(ra)
 

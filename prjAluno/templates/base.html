@@ -52,14 +52,14 @@
       <i class="bi bi-gear-fill" ></i>
     </button>
     
-    <div class="row">
+    <div id="topo" class="row">
         <div class="col-12 text-center">
           <strong class="bg-dark p-2 mt-2 rounded-3"><i id="ano" class="bi bi-calendar text-warning m-lg-5" style="font-size:27px"></i> </strong>
          </div>
     </div>
 
     <div class="container">
-    <div class="row">
+    <div id="menu" class="row">
     <div class="col-sm-1">
     <a href = {% url 'inicial' %}>Alunos</a>
     </div>
@@ -104,6 +104,19 @@
                 </label>
                 </div>
               </div>
+               <div class="row">
+              <div class="col-12">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value=""
+                  id="versaoCompleta"
+                />
+                <label for="versaoCompleta">
+                  Versão Completa
+                </label>
+                </div>
+              </div>
                <div class="row mt-2">
               <div class="col-4">
               </div>
@@ -120,6 +133,7 @@
               </div>
               </div>
             </div>
+            
           </div>
           <div class="modal-footer">
             <button

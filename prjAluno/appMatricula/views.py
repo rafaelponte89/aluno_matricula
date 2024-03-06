@@ -2,9 +2,10 @@ from django.shortcuts import render
 from django.shortcuts import HttpResponse
 from appClasse.models import Classe
 from appAluno.models import Aluno
-from appAluno.models import Matricula
+from .models import Matricula
 from django.db.models import Q
 from utilitarios.utilitarios import criarMensagem
+from datetime import datetime
 # Create your views here.
 
 
@@ -21,27 +22,42 @@ def deletar(request):
     pass
 
 
-def remanejar(request):
+def movimentar(request):
     
     try:
         matricula = Matricula.objects.get(pk=request.GET.get('matricula'))
-        classe = Classe.objects.get(pk=request.GET.getlist('classe_remanejamento')[0])
-        matricula.situacao = 'M'
-        matricula.data_movimentacao = request.GET.get('data_movimentacao')
+        classe = (Classe.objects.get(pk=request.GET.getlist('classe_remanejamento')[0]) if (request.GET.getlist('classe_remanejamento')[0]) != '0' else None)
+        movimentacao = request.GET.getlist('movimentacao')[0]
+        data_movimentacao = request.GET.get('data_movimentacao')
         matricula.ano = request.GET.get('ano')
+        matricula.situacao = movimentacao
+        matricula.data_movimentacao = data_movimentacao
         matricula.save()
-        matricula_nova = Matricula()
-        matricula_nova.classe = classe
-        matricula_nova.aluno = matricula.aluno
-        matricula_nova.numero = Classe.retornarProximoNumeroClasse(Matricula, classe)
-        matricula_nova.situacao = 'C'
-        matricula_nova.ano = request.GET.get('ano')
-        matricula_nova.classe = classe
-        matricula_nova.data_matricula = matricula.data_movimentacao
-        matricula_nova.save()
-        return criarMensagem("Remanejamento efetuado!", "success")
-    
+        
+        if(movimentacao == "REMA"):
+            if (verificar_matricula_ativa_no_ano(matricula.ano, matricula.aluno.rm)):
+                matricula_nova = Matricula()
+                matricula_nova.classe = classe
+                matricula_nova.aluno = matricula.aluno
+                matricula_nova.numero = Classe.retornarProximoNumeroClasse(Matricula, classe)
+                matricula_nova.situacao = 'C'
+                matricula_nova.ano = request.GET.get('ano')
+                matricula_nova.classe = classe
+                matricula_nova.data_matricula = data_movimentacao
+                matricula_nova.save()
+                return criarMensagem("Remanejamento efetuado!", "success")
+            else:
+                return criarMensagem("Aluno com matrícula ativa no Ano!!!","danger")
+        elif (movimentacao == "BXTR"):
+           
+           
+            return criarMensagem("Transferência efetuada!", "success")
+        else:
+             return criarMensagem("Movimentação efetuada!", "success")
+
+        
     except Exception as erro:
+        print(erro)
         return criarMensagem(f"Erro ao efetuar o Remanejamento!{erro}",
                              "danger")
         
@@ -50,7 +66,7 @@ def transferir(request):
     try:
         matricula = Matricula.objects.get(pk=request.GET.get('matricula'))
         matricula.ano = request.GET.get('ano')
-        matricula.situacao = 'T'
+        matricula.situacao = 'BXTR'
         matricula.data_movimentacao = request.GET.get('data_movimentacao')
         matricula.save()
         return criarMensagem("Transferência efetuada!", "success")
@@ -65,6 +81,30 @@ def ordernar_alfabetica(request):
     linhas = carregar_linhas(classe, 'aluno__nome')
     return HttpResponse(linhas)
 
+####
+def carregar_movimentacao(request):
+   
+    movimentacoes = Matricula.retornarSituacao()
+    opcoes = "<option value='0'>Selecione</option>"
+                                            
+    for m in movimentacoes:
+     
+        if m[0] == "BXTR":
+            situacao = "TRANSFERIDO"
+            cor = "text-danger"
+        elif m[0] == "REMA":
+            situacao = "REMANEJADO"
+            cor = "text-success"
+        elif m[0] == "NCFP":
+            cor = "text-danger"
+            situacao = "Ñ COMP. FORA PRAZO"
+            
+        if m[0] not in ['C','P','R']:
+            opcoes += f"<option value={m[0]}>{situacao} </option>"
+        
+    return HttpResponse(opcoes)
+#####
+
 
 def carregar_classes(request):
     ano = request.GET.get('ano')
@@ -76,7 +116,7 @@ def carregar_classes(request):
             periodo = "MANHÃ"
         else:
             periodo = "TARDE"
-        opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}"
+        opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
         
     return HttpResponse(opcoes)
 
@@ -97,26 +137,28 @@ def carregar_linhas(classe, ordem="numero"):
         if m.situacao == "C":
             situacao = "CURSANDO"
             cor = "text-primary"
-        elif m.situacao == "T":
+        elif m.situacao == "BXTR":
             situacao = "TRANSFERIDO"
             cor = "text-danger"
-        elif m.situacao == "M":
+        elif m.situacao == "REMA":
             situacao = "REMANEJADO"
             cor = "text-success"
         elif m.situacao == "P":
             situacao = "PROMOVIDO"
         elif m.situacao == "R":
             situacao = "REPROVADO"
+        elif m.situacao == "NCFP":
+            cor = "text-danger"
+            situacao = "Ñ COMP. FORA PRAZO"
         else:
             situacao = "ARQUIVADO"
-            
-        linhas += f"""<tr> <td>{m.numero} </td> <td >{m.aluno.nome}</td> <td class={cor}> {situacao} </td> 
-        <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg transferir'
-          value={m.id} data-bs-toggle='modal' data-bs-target='#transferirModal'> 
-                           <i class="bi bi-arrow-down"></i> 
-                        </button></td> 
-                        <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg remanejar'
-          value={m.id} data-bs-toggle='modal' data-bs-target='#remanejarModal'> 
+        if m.data_movimentacao is None:
+            m.data_movimentacao = ''
+        linhas += f"""<tr> <td class='text-center'><button class='rounded-circle bg-light text-dark border-success'>{m.numero} </button></td> <td >{m.aluno.nome}</td> <td class={cor}> {situacao} </td> 
+                            <td  class='text-center'> {m.data_matricula} </td> 
+                            <td  class='text-center text-danger'> {m.data_movimentacao} </td>
+                        <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg movimentar'
+          value={m.id} data-bs-toggle='modal' data-bs-target='#movimentarModal'> 
                            <i class="bi bi-arrow-down-up"></i>
                         </button></td>
                                      <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg excluir'
@@ -210,7 +252,7 @@ def upload_matriculas(request):
         classe = int(request.GET.get('classe'))
         classe = Classe.objects.get(pk=classe)
         ano = request.GET.get('ano')
-        situacao = 'C'
+       
         data_matricula = request.GET.get('data_matricula')
         
         matriculas = Matricula.objects.filter(classe=classe)
@@ -222,7 +264,14 @@ def upload_matriculas(request):
             linhas_array.append(linhas[linha].split(';'))
     
         for linha in range(len(linhas_array)-1):  
-            ra = int(linhas_array[linha][4])         
+            ra = int(linhas_array[linha][4])  
+            situacao = ('C' if (len(linhas_array[linha][8]) == 0)
+                        else linhas_array[linha][8])
+            
+            data_movimentacao = (None if(len(linhas_array[linha][9]) == 0) else 
+                                 datetime.strptime(linhas_array[linha][9],"%d/%m/%Y"))
+            print(data_movimentacao)
+   
             rm = Aluno.objects.filter(ra=ra).values('rm')[:1]
 
             for cod in rm:
@@ -230,9 +279,12 @@ def upload_matriculas(request):
                 
                 if (verificar_matricula_ativa_no_ano(ano, aluno.rm)):
                     numero = Classe.retornarProximoNumeroClasse(Matricula, classe)
+                    print("Situação",situacao)
+                    print("Data Movimentacao",data_movimentacao)
+                    print("data Matricula", data_matricula)
                     matricula = Matricula(ano=ano, classe=classe, aluno=aluno, 
                                     situacao=situacao, 
-                                    data_matricula=data_matricula, numero=numero)
+                                    data_matricula=data_matricula, numero=numero, data_movimentacao=data_movimentacao)
             
                     matricula.save()                
                 

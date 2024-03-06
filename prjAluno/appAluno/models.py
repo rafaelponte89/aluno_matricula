@@ -1,5 +1,5 @@
 from django.db import models
-from appClasse.models import Classe
+
 # Create your models here.
 # Aluno
 class Aluno (models.Model):
@@ -45,35 +45,7 @@ class Telefone(models.Model):
     
     def retornarListaTelefones():
         return Telefone.TEL_CHOICES
-
-#Matrícula do aluno (NÃO IMPLEMENTADO)
-class Matricula(models.Model):
-    SITUACAO = (
-        ('C', 'CURSANDO'),
-        ('T', 'TRANSFERIDO'),
-        ('M', 'REMANEJADO'),
-        ('P', 'PROMOVIDO'),
-        ('R', 'REPROVADO'),
-        ('A', 'ARQUIVADA')
-    )
-    ano = models.IntegerField(blank=False, null=False, default=0)
-    classe = models.ForeignKey(Classe, on_delete=models.RESTRICT, default='')
-    aluno = models.ForeignKey(Aluno, on_delete=models.RESTRICT, default='')
-    numero = models.IntegerField(blank=False, null=False, default=0)
-    situacao = models.CharField(max_length=1, choices=SITUACAO, default='A')
-    data_matricula = models.DateField(null=True)
-    data_movimentacao = models.DateField(null=True)
     
-    def __str__(self):
-        return f'{self.aluno} - {self.classe}' 
-    
-    class Meta:
-        unique_together = ['ano', 'aluno', 'situacao', 'data_matricula']   
-    
-    def retornarSituacao():
-        return Matricula.SITUACAO
-    
-        
 #Documentos do aluno (NÃO IMPLEMENTADO)
 class Prontuario(models.Model):
     DOCUMENTO_CHOICES = (

@@ -17,7 +17,11 @@ class Classe(models.Model):
     periodo = models.CharField(max_length=1, choices=PERIODO_CHOICES, default='')
     
     def __str__(self):
-        return f'{self.serie}º {self.turma} {self.periodo}'
+        if self.periodo == "M":
+            periodo = "MANHÃ"
+        else:
+            periodo = "TARDE"
+        return f'{self.serie}º {self.turma} {periodo}'
     
     def retornarPeriodos():
         return Classe.PERIODO_CHOICES

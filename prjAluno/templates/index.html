@@ -64,9 +64,10 @@
       <thead>
         <th>RM</th>
         <th>Nome</th>
-        <th>Telefone</th>
-        <th>RA</th>
-        <th>Atualizar</th>
+        <th class="text-center">Turma</th>
+        <th class="text-center">Telefone</th>
+        <th class="text-center">RA</th>
+        <th class="text-center">Atualizar</th>
       
       </thead>
       <tbody id="corpoTabela">
@@ -416,7 +417,7 @@
         success: (response) => {
           verificarRepeticao();
           $("#gravar").off("click");
-          $("#id_nome").off("keypress");
+          $("#id_nome").off("keyup");
           $("#id_ra").off("keypress");
 
           $("#gravar").click(() => sendGravar());

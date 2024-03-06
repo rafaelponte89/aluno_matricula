@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'prjAluno.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'bd/db_.sqlite3',
+        'NAME': BASE_DIR / 'bd/db.sqlite3',
     }
 }
 

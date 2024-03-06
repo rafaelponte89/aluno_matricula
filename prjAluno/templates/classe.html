@@ -187,7 +187,6 @@
 </div>
       </div>
       <div class="modal-footer">
-          <button type="button" class="btn btn-success"> Aplicar </button>
       </div>
       
     </div>
@@ -224,26 +223,8 @@
       </div>
       </div>
       <div class="modal-footer mt-2">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-                    <button
-                        id="editarTurma"
-                        type="button"
-                        class="btn btn-primary"
-                        data-bs-dismiss="modal"
-                    >
-                        Editar
-                    </button>
-                    <button
-                        id="deletarTodos"
-                        type="button"
-                        class="btn btn-warning"
-                        data-bs-dismiss="modal"
-                    >
-                         Deletar Todos
-                    </button>
-                    </div>
+                   
+      </div>
     </div>
   </div>
 </div>
@@ -254,7 +235,7 @@
 
 <script type="text/javascript">
 $(function(){
-    var classe = '';
+  
 
 
     function exibirTurma(classe){
@@ -264,8 +245,7 @@ $(function(){
             classe: classe
           },
           success: (response) => {
-              $("#alunosClasse").html(response);
-             
+              $("#alunosClasse").html(response);  
               
           },
           fail: (response) => {
@@ -336,7 +316,7 @@ $(function(){
         $.get({
             url: "{% url 'atualizarclasse' %}",
             data: {
-                ano: $("#ano").html(),
+                ano: $("#anoConfig").val(),
                 classe: $("#codClasse").val(),
                 serie: $("#serieAtualizar").val(),
                 turma: $("#turmaAtualizar").val(),
@@ -384,7 +364,7 @@ $(function(){
         $.get({
         url: "{% url 'gravarclasse' %}",
         data: {
-            ano: $("#ano").html(),
+            ano: $("#anoConfig").val(),
             serie: $("#serie").val(),
             turma: $("#turma").val().toUpperCase(),
             periodo: $("#periodo").val()
@@ -405,10 +385,11 @@ $(function(){
     }
 
     function sendListar() {
+       
         $.get({
         url: "{% url 'listarclasse' %}",
         data: {
-            ano: $("#ano").html(),
+            ano: $("#anoConfig").val(),
         },
         success: (response) => {
             $("#corpoTabela").html(response);
@@ -444,8 +425,12 @@ $(function(){
         sendListar();
     });
 
+   
+
     $("#salvarConfig").click(() => {
+       
         sendListar();
+
     });
 
     function sendBuscar() {

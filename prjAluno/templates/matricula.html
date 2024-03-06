@@ -51,11 +51,13 @@
       class="table table-hover table-responsive table-bordered table-success"
     >
       <thead>
-        <th>Nº</th>
+        <th class='text-center'>Nº</th>
         <th>Nome</th>
         <th>Situação</th>
-        <th class='text-center'>Transferir</th>
-        <th class='text-center'>Remanejar </th>
+         <th  class='text-center'>Matrícula</th>
+         <th  class='text-center'>Movimentação</th>
+        
+        <th class='text-center'>Movimentar </th>
         <th class='text-center'>Excluir</th>
       
       </thead>
@@ -68,19 +70,89 @@
 
 
 
-<!-- Modal Transferencia-->
+
+<!-- Modal Movimentacao-->
 <div
   class="modal fade"
-  id="transferirModal"
+  id="movimentarModal"
   tabindex="-1"
-  aria-labelledby="transferirModalLabel"
+  aria-labelledby="movimentarModalLabel"
   aria-hidden="true"
 >
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="transferirModalLabel">
-          Vai transferir o aluno? Então nos informe a data!
+        <h5 class="modal-title" id="movimentarModalLabel">
+          Tela Movimentação
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+     
+        <div id="dadosMovimento" class="row">
+          <!-- Dados do Registro Aqui -->
+         
+        </div>
+
+
+        <div class="row" id="movimentacao">
+          <label for="selecaoMovimentacao">Movimentação</label>
+           <div class="col">
+          <select id="selecaoMovimentacao" class="form-control formulario mt-2">
+
+          </select>
+          </div>
+        </div>
+
+
+
+        <div class="row" id="selecaoClasse">
+          <label for="classesRemanejamento">Classes</label>
+           <div class="col">
+          <select id="classesRemanejamento" class="form-control formulario mt-2">
+
+          </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer mt-2">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button
+                        id="simMovimentar"
+                        type="button"
+                        class="btn btn-primary"
+                        data-bs-dismiss="modal"
+                    >
+                        Movimentar
+                    </button>
+                    </div>
+    </div>
+  </div>
+</div>
+<!-- Fim Modal Remanejar Matricula-->
+
+
+
+<!-- Modal Matricula-->
+<div
+  class="modal fade"
+  id="matriculaModal"
+  tabindex="-1"
+  aria-labelledby="matriculaModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="matriculaModalLabel">
+          Edição da Matrícula
         </h5>
         <button
           type="button"
@@ -114,64 +186,13 @@
 <!-- Fim Modal Atualizar Registro-->
 
 
-<!-- Modal Remanejar-->
-<div
-  class="modal fade"
-  id="remanejarModal"
-  tabindex="-1"
-  aria-labelledby="remanejarModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="remanejarModalLabel">
-          Vai remanejar o aluno? Então nos informe a classe e data!
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="modal-body">
-     
-        <div id="dadosRemanejamento" class="row">
-          <!-- Dados do Registro Aqui -->
-         
-        </div>
-
-        <div class="row">
-          <label for="classesRemanejamento">Classes</label>
-           <div class="col">
-          <select id="classesRemanejamento" class="form-control formulario mt-2">
-
-          </select>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer mt-2">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-                    <button
-                        id="simRemanejar"
-                        type="button"
-                        class="btn btn-primary"
-                        data-bs-dismiss="modal"
-                    >
-                        Remanejar
-                    </button>
-                    </div>
-    </div>
-  </div>
-</div>
-<!-- Fim Modal Remanejar Matricula-->
-
 <script type="text/javascript">
 
 $(document).ready(() => {
+
+    $("#selecaoClasse").hide();
+   
+
     function carregarClasses(ano) {
         $.get({
             url: "{% url 'carregarclasses' %}",
@@ -210,14 +231,10 @@ $(document).ready(() => {
 
     function recarregarContexto(response) {
           $("#corpoTabela").html(response);
-                $(".transferir").off('click');
-                $(".transferir").click(function (){
-                  matricula = $(this).val();
               
-                  buscarMatricula(matricula);                               
-               });
-                $(".remanejar").off('click');
-                $(".remanejar").click(function (){
+              
+                $(".movimentar").off('click');
+                $(".movimentar").click(function (){
                   matricula = $(this).val();
               
                   buscarMatricula(matricula);                               
@@ -229,6 +246,17 @@ $(document).ready(() => {
               
                   excluirMatricula(matricula);                               
                });
+    }
+
+    function retornarData(){
+      let data = new Date();
+      let dia = data.getDate();
+      let mes = data.getMonth() + 1;
+      let ano = data.getFullYear();
+      if (mes < 10) mes = "0" + mes;
+      if (dia < 10) dia = "0" + dia;
+      let hoje = ano + "-" + mes + "-" + dia
+      return hoje 
     }
 
     function carregarMatriculas(classe) {
@@ -263,43 +291,49 @@ $(document).ready(() => {
         })
     }
 
-    function sendTransferir() {
+    
+    
+
+    function sendMovimentar() {
         $.get({
-            url: "{% url 'transferir' %}",
+            url: "{% url 'movimentar' %}",
             data: {
                 matricula: matricula,
                 data_movimentacao: $("#dataMovimentacao").val(),
-                ano: $("#ano").html()
+                movimentacao: $("#selecaoMovimentacao").val(),
+                classe_remanejamento: $("#classesRemanejamento").val(),
+                ano: $("#anoConfig").val()
             },
             success: (response) => {
                      $("#mensagens").html(response);
                  setTimeout(function () {
                  $("#mensagem").css("display", "none");
                 }, 3000);
+               
+                $("#selecaoClasse").hide();
+                carregarClasses($("#anoConfig").val());
+                carregarMovimentacao();
+                
                 carregarMatriculas($("#classes").val());
+              
             },
             fail: (response) => {}
         })
     }
 
-    function sendRemanejar() {
-        $.get({
-            url: "{% url 'remanejar' %}",
+    function carregarMovimentacao() {
+         $.get({
+            url: "{% url 'carregarmovimentacao' %}",
             data: {
-                matricula: matricula,
-                data_movimentacao: $("#dataMovimentacao").val(),
-                classe_remanejamento: $("#classesRemanejamento").val(),
-                ano: $("#ano").html()
+              
             },
             success: (response) => {
-                     $("#mensagens").html(response);
-                 setTimeout(function () {
-                 $("#mensagem").css("display", "none");
-                }, 3000);
-                carregarMatriculas($("#classes").val());
+                  $("#selecaoMovimentacao").html(response);
+                
             },
             fail: (response) => {}
         })
+
     }
      // buscar matricula
     function buscarMatricula(matricula){
@@ -310,33 +344,33 @@ $(document).ready(() => {
                 matricula: matricula
             },
             success: (response) => {
-                $("#simTransferir").off("click");
+               
+               
                 $("#simDeletar").off("click");
-                $("#simRemanejar").off("click");
+                $("#simMovimentar").off("click");
                
                 
                 $("#dadosMatricula").html(response);
-                $("#dadosRemanejamento").html(response);
-                $("#simTransferir").click( function (){
-                  $("#dadosRemanejamento").empty();
-                    sendTransferir();
-                  });
-                $("#simRemanejar").click( function (){
+                $("#dadosMovimento").html(response);
+               
+                $("#simMovimentar").click( function (){
                    $("#dadosMatricula").empty();
-                    sendRemanejar();
+                    sendMovimentar();
                   });
+                   $("#dataMovimentacao").val(retornarData());
                  
             },
             fail: (response) => {},
         });
     }
 
-    carregarClasses($("#ano").html());
+    carregarMovimentacao();
+    carregarClasses($("#anoConfig").val());
      
     $("#salvarConfig").click(() => 
     {
 
-            carregarClasses($("#ano").html());
+            carregarClasses($("#anoConfig").val());
             $("#corpoTabela").empty();
 
 
@@ -353,6 +387,20 @@ $(document).ready(() => {
 
 
 
+    $("#selecaoMovimentacao").change( function () {
+       
+         if($(this).val() === "REMA") {
+              $("#selecaoClasse").show();
+          }
+          else {
+              $("#selecaoClasse").hide();
+
+          }
+    });
+    
+
+    $("#dataMatricula").val(retornarData());
+   
 
     function lerArquivoCSV(arquivo, callback) {
   const leitor = new FileReader();
@@ -370,11 +418,14 @@ let texto;
 
 inputArquivo.addEventListener('change', function (evento) {
   const arquivo = evento.target.files[0];
+        
+
 
   lerArquivoCSV(arquivo, function (conteudo) {
     // Aqui você pode prosseguir para o próximo passo
      $("#uploadMatriculas").prop("hidden",false);
      $("#dataMatricula").prop("hidden",false);
+  
 
       texto = conteudo
   });
@@ -395,7 +446,7 @@ $("#uploadMatriculas").click(() => {
             data: {
                 matriculas: texto,
                 classe: $("#classes").val(),
-                ano: $("#ano").html(),
+                ano: $("#anoConfig").val(),
                 data_matricula: $("#dataMatricula").val()
             },
             success: (response) => {

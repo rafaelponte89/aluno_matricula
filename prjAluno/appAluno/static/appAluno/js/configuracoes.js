@@ -1,15 +1,31 @@
+
 function verificarConfiguracao() {
-  
+
+  //Carregar seleção versão
+  if(localStorage.getItem("completa")){
+    $("#topo").show();
+    $("#menu").show();
+    $("#versaoCompleta").prop("checked",true);
+  }
+  else {
+    $("#topo").hide();
+    $("#menu").hide();
+    $("#versaoCompleta").prop("checked",false);
+  }
+
+  //Carregar preenchimento automatico
   if (localStorage.getItem("automatico")) {
     autoPreenchimento.checked = true;
   } else {
     autoPreenchimento.checked = false;
   }
 
+  //Carregar ano Configuração
   if (localStorage.getItem("anoConfig")) {
+    
     document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
     document.getElementById("anoConfig").value = localStorage.getItem("anoConfig");
-
+   
   }
   else {
     const date = new Date();
@@ -28,39 +44,22 @@ function limparStorage() {
   for(let i=0; i < campos.length; i++) {
     localStorage.removeItem("campo"+i);
     localStorage.removeItem("campoAnt"+i);
+    console.log(i);
   }
   localStorage.removeItem("repeticao");
 }
 
-function limparStorage_antiga() {
-  localStorage.removeItem("serie");
-  localStorage.removeItem("periodo");
-  localStorage.removeItem("turma");
-  localStorage.removeItem("ano");
-  localStorage.removeItem("serieAnt");
-  localStorage.removeItem("periodoAnt");
-  localStorage.removeItem("turmaAnt");
-  localStorage.removeItem("anoAnt");
-  localStorage.removeItem("repeticao");
+function selecionarVersao() {
+  $("#salvarConfig").click(() => {
+      if($("#versaoCompleta").prop("checked") == true) {
+        localStorage.setItem("completa",true);
+      }
+      else {
+        localStorage.removeItem("completa");
+      }
+  });
 }
-
-
-//versão 1 estática
-function preencherAutomatico2() {
-  if (
-    localStorage.getItem("repeticao") > 0 &&
-    localStorage.getItem("automatico") === "true"
-  ) {
-    console.log("Serie", localStorage.getItem("serie"));
-    $("#serieAtualizar").val(localStorage.getItem("serie"));
-
-    $("#turmaAtualizar").val(localStorage.getItem("turma"));
-    $("#periodoAtualizar").val(localStorage.getItem("periodo"));
-    $("#anoAtualizar").val(localStorage.getItem("ano"));
-    console.log("maior que 2");
-  }
-}
-
+selecionarVersao();
 // Identifica campos a serem repetidos por uma classe
 // Nova versão 15012024 dinâmica
 function preencherAutomatico() {
@@ -120,74 +119,24 @@ function verificarRepeticao() {
   }
 }
 
-//versão 1 estática
-function verificarRepeticao2() {
-  if (localStorage.getItem("automatico") === "true") {
-    if (localStorage.getItem("repeticao")) {
-      var serie = localStorage.getItem("serie");
-      var turma = localStorage.getItem("turma");
-      var periodo = localStorage.getItem("periodo");
-      var ano = localStorage.getItem("ano");
-
-      localStorage.setItem("serieAnt", serie);
-      localStorage.setItem("turmaAnt", turma);
-      localStorage.setItem("periodoAnt", periodo);
-      localStorage.setItem("anoAnt", ano);
-
-      var serieAnt = localStorage.getItem("serieAnt");
-      var turmaAnt = localStorage.getItem("turmaAnt");
-      var periodoAnt = localStorage.getItem("periodoAnt");
-      var anoAnt = localStorage.getItem("anoAnt");
-
-      localStorage.setItem("serie", $("#serieAtualizar").val());
-      localStorage.setItem("turma", $("#turmaAtualizar").val());
-      localStorage.setItem("periodo", $("#periodoAtualizar").val());
-      localStorage.setItem("ano", $("#anoAtualizar").val());
-
-      serie = localStorage.getItem("serie");
-      turma = localStorage.getItem("turma");
-      periodo = localStorage.getItem("periodo");
-      ano = localStorage.getItem("ano");
-
-      if (
-        serie === serieAnt &&
-        turma === turmaAnt &&
-        periodo === periodoAnt &&
-        ano === anoAnt
-      ) {
-        console.log(localStorage.getItem("repeticao"));
-        var repeticao = parseInt(localStorage.getItem("repeticao"));
-        repeticao++;
-        localStorage.setItem("repeticao", repeticao);
-      } else {
-        localStorage.setItem("repeticao", 0);
-      }
-    } else {
-      localStorage.setItem("repeticao", 0);
-      localStorage.setItem("serie", $("#serieAtualizar").val());
-      localStorage.setItem("turma", $("#turmaAtualizar").val());
-      localStorage.setItem("periodo", $("#periodoAtualizar").val());
-      localStorage.setItem("ano", $("#anoAtualizar").val());
-    }
-  }
-}
-
 var salvarConfig = document.getElementById("salvarConfig");
 var autoPreenchimento = document.getElementById("preenchimentoAutomatico");
 var anoConfig = document.getElementById("anoConfig");
 
 //quando clica no botão salvar de configuração
 salvarConfig.addEventListener("click", function () {
-  
   if(anoConfig.value !== '') {
     localStorage.setItem("anoConfig", anoConfig.value);
     document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
+    anoConfig.value = localStorage.getItem("anoConfig");
   }
   else {
     const date = new Date();
     const currentYear = date.getFullYear();
     localStorage.setItem("anoConfig", currentYear);
     document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
+    anoConfig.value = localStorage.getItem("anoConfig");
+
   }
   if (autoPreenchimento.checked) {console.log("automatico");
     localStorage.setItem("automatico", true);
@@ -198,6 +147,7 @@ salvarConfig.addEventListener("click", function () {
     limparStorage();
   }
   verificarConfiguracao();
+  
 });
 
 
