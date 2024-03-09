@@ -1,6 +1,5 @@
 
 function verificarConfiguracao() {
-
   //Carregar seleção versão
   if(localStorage.getItem("completa")){
     $("#topo").show();
@@ -21,11 +20,9 @@ function verificarConfiguracao() {
   }
 
   //Carregar ano Configuração
-  if (localStorage.getItem("anoConfig")) {
-    
+  if (localStorage.getItem("anoConfig")) { 
     document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
     document.getElementById("anoConfig").value = localStorage.getItem("anoConfig");
-   
   }
   else {
     const date = new Date();
@@ -33,9 +30,7 @@ function verificarConfiguracao() {
     localStorage.setItem("anoConfig",currentYear);
     document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
     document.getElementById("anoConfig").value = localStorage.getItem("anoConfig");
-
   }
- 
 }
 
 function limparStorage() {
@@ -58,6 +53,18 @@ function selecionarVersao() {
         localStorage.removeItem("completa");
       }
   });
+
+  $('#configuracoesModal').on('hidden.bs.modal', function (e) {
+    if($("#versaoCompleta").prop("checked") == true) {
+      localStorage.setItem("completa",true);
+    }
+    else {
+      localStorage.removeItem("completa");
+    }
+
+  });
+
+
 }
 selecionarVersao();
 // Identifica campos a serem repetidos por uma classe
@@ -150,5 +157,31 @@ salvarConfig.addEventListener("click", function () {
   
 });
 
+$('#configuracoesModal').on('hidden.bs.modal', function (e) {
+  
+  if(anoConfig.value !== '') {
+    localStorage.setItem("anoConfig", anoConfig.value);
+    document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
+    anoConfig.value = localStorage.getItem("anoConfig");
+  }
+  else {
+    const date = new Date();
+    const currentYear = date.getFullYear();
+    localStorage.setItem("anoConfig", currentYear);
+    document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
+    anoConfig.value = localStorage.getItem("anoConfig");
+
+  }
+  if (autoPreenchimento.checked) {console.log("automatico");
+    localStorage.setItem("automatico", true);
+    
+  } else {
+    localStorage.removeItem("automatico");
+   
+    limparStorage();
+  }
+  verificarConfiguracao();
+
+})
 
 verificarConfiguracao();

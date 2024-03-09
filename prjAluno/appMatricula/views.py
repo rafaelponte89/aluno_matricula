@@ -106,6 +106,23 @@ def carregar_movimentacao(request):
 #####
 
 
+def carregar_classes_remanejamento(request):
+    ano = request.GET.get('ano')
+     
+    classe_atual = Classe.objects.get(pk=request.GET.get('serie'))
+    classes = Classe.objects.filter(ano=ano, serie=classe_atual.serie)
+    classes = classes.exclude(pk=request.GET.get('serie'))
+    opcoes = "<option value='0'>Selecione</option>"
+                                            
+    for c in classes:
+        if c.periodo == "M":
+            periodo = "MANHÃ"
+        else:
+            periodo = "TARDE"
+        opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
+        
+    return HttpResponse(opcoes)
+
 def carregar_classes(request):
     ano = request.GET.get('ano')
     classes = Classe.objects.filter(ano=ano)

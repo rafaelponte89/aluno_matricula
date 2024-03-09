@@ -132,10 +132,10 @@
           <div class="col-12">
             <input
               type="radio"
-              name="flexRadioDefault"
-              id="flexRadioDefault1"
+              name="oprelatorio"
+              id="rmrelatorio"
             />
-            <label for="flexRadioDefault1"> Registro de Matrícula </label>
+            <label for="rmrelatorio"> Registro de Matrícula </label>
           </div>
         </div>
         <div class="row">
@@ -171,26 +171,29 @@
           <div class="col-12">
             <input
               type="radio"
-              name="flexRadioDefault"
-              id="flexRadioDefault2"
+              name="oprelatorio"
+              id="telrelatorio"
             />
-            <label for="flexRadioDefault2"> Lista Telefônica Turma </label>
+            <label for="telrelatorio"> Lista Telefônica Turma </label>
           </div>
         </div>
       </div>
-      <div class="row">
-        <div class="col-12">
-          <input
-            type="number"
-            name="ano"
-            maxlength="4"
-            class="form-control"
-            placeholder="Ano"
-            required=""
-            id="ano"
-            min="4"
-          />
+      <div class="row mb-2">
+        <div class="col-1">
         </div>
+        <div class="col-8 align-content-center">
+        
+           <select
+            type="text"
+            id="classes"
+          placeholder="Classes"
+            class="form-control formulario"
+          aria-describedby="basic-addon1"
+         />
+  
+          </select>
+        </div>
+       
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
@@ -302,6 +305,30 @@
         },
       });
     }
+
+     function sendBaixarListaTelefonica(classe) {
+        $.post({
+        url: "{% url 'listatelefonicapdf' %}",
+        // datatype: 'pdf',
+        data: {
+          classe: classe,
+        },
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        success: (response) => {
+          var blob = new Blob([response], { type: "application/pdf" });
+
+          if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(blob); // for IE
+          } else {
+            var fileURL = URL.createObjectURL(blob);
+            var newWin = window.open(fileURL);
+            newWin.focus();
+          }
+        },
+      });
+     }
 
     //Baixar Pdf
     function sendBaixarPdf(rmi, rmf) {
@@ -480,7 +507,7 @@
       });
     }
 
-    function addMatricula() {
+   /* function addMatricula() {
      
       let matriculaAdd = document.querySelector("#matriculas");
       let novaMatricula =
@@ -494,41 +521,8 @@
          sendClasses(anos[i].value, i);
         })
       }
-      /* $(".ano").off();
-       $(".ano").focusout(function () {
-              //busca informação das salas de acordo com o ano e carrega
-              let classes = $(".classes"); 
-        
-              for (let i =0; i < classes.length; i++) {
-               
-              
-                if($(this).val() === "2024"){
-                  
-                     for (child of classes[i].children){
-                    child.remove();
-                  }
-                   classes[i].options[classes[i].options.length] = new Option('My option', 'My value');
-              
-                }
-                else if ($(this).val() === "2023") {
-                    for (child of classes[i].children){
-                    child.remove();
-                  }
-                                     classes[i].options[classes[i].options.length] = new Option('My option2', 'My value2');
-
-                }
-                
-            
-
-              }
-            
-          });*/
-    }
-
-    
-    function delMatricula() {
-
-    }
+  
+    }*/
 
     function delTelefone() {
       let telefones = document.getElementsByClassName("telefone");
@@ -606,13 +600,13 @@
           delTelefone();
           //adicionar telefone quando clica no +
           $("#addTelefone").click(() => {
-            //alert("ola telefone");
+            
             addTelefone();
             delTelefone();
           });
-          $("#addMatricula").click(() => {
+         /* $("#addMatricula").click(() => {
             addMatricula();
-          });
+          });*/
 
           
           preencherAutomatico();
@@ -640,7 +634,7 @@
     }
 
     $("#simCancelar").click(() => {
-      //console.log($("#registroAluno").text())
+
 
       sendCancelar($("#registroAluno").text());
     });
@@ -673,12 +667,39 @@
       }
     });
 
-    $("#baixarpdf").click(() =>
-      sendBaixarPdf($("#id_rmi").val(), $("#id_rmf").val())
+    $("#baixarpdf").click(() =>{
+      if($("#rmrelatorio").is(":checked")) {
+        sendBaixarPdf($("#id_rmi").val(), $("#id_rmf").val())
+      }
+      else if ($("#telrelatorio").is(":checked")) {
+        sendBaixarListaTelefonica($("#classes").val());
+      }
+    }
     );
     $("#bkp").click(() => sendBkp());
 
-    $("#id_nome").focus().keydown();
+   // $("#id_nome").focus().keydown();
+
+
+    function carregarClasses(ano) {
+        $.get({
+            url: "{% url 'carregarclasses' %}",
+            data: {
+                ano: ano
+            },
+            success: (response) =>{
+                $("#classes").html(response);
+            },
+            fail: () =>{
+
+            }
+        })
+    }
+
+    $("#relatorio").click(() => {
+            carregarClasses($("#anoConfig").val());
+
+    });
   });
 </script>
 {% endblock content %}

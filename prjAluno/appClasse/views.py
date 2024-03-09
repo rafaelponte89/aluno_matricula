@@ -66,7 +66,7 @@ def buscar(request):
     return HttpResponse(corpo)
     
 
-#Gravar classe sem tratamento
+#Gravar classe
 def gravar(request):
     try:
         ano = request.GET.get('ano')
@@ -87,7 +87,7 @@ def gravar(request):
         
         return criarMensagem('Erro ao gravar!!!', 'danger')
     
-
+#Deletar classe
 def deletar(request):
     try:
         classe = request.GET.get("classe")
@@ -97,7 +97,7 @@ def deletar(request):
     except Exception as erro:
         return criarMensagem(erro, 'danger')
     
-    
+#Atualizar classe
 def atualizar(request):
 
     try:
@@ -118,6 +118,7 @@ def atualizar(request):
         return criarMensagem("Erro ao Atualizar Classe!!!", "danger")
 
 
+#Construir tabela das classes do ano recebido como parâmetro
 def carregarAnoAtual(ano):
     classe = Classe.objects.filter(ano=ano)
     corpo = ''
@@ -144,14 +145,16 @@ def carregarAnoAtual(ano):
         
     return corpo 
     
-    
+ 
+#Listar classes em HTML   
 def listar(request):
     ano = request.GET.get("ano")
     return HttpResponse(carregarAnoAtual(ano))
 
 
+#Buscar aluno
 def buscarAluno(request):
-    nome = request.GET.get('nome')
+    nome = request.GET.get('nome')   
     # Se status não ativo
     alunos = Aluno.objects.filter(Q(nome__contains=nome))[:5]
     linhas = ''
@@ -161,16 +164,9 @@ def buscarAluno(request):
                         <i class="bi bi-plus-circle-fill"></i>
                         </button></td></tr>"""
     
-    return HttpResponse(linhas)  
+    return HttpResponse(linhas)    
 
-
-
-def adicionarNumeroChamada(classe):
-    matriculas = Matricula.objects.filter(classe=classe)
-    numero = len(matriculas) + 1
-    return numero
-   
-        
+#Adicionar aluno na classe        
 def adicionarNaClasse(request):
     try:
         classe = Classe.objects.get(pk=request.GET.get('classe'))       
@@ -195,10 +191,9 @@ def adicionarNaClasse(request):
         print(error)
         return criarMensagemModal("Erro ao efetuar a Matrícula", "danger")
 
-
-def exibirTurma(request):
+#Visualizar alunos da classe
+def exibirClasses(request):
     codigo_classe = request.GET.get('classe')
-    print(codigo_classe)
     classe = Classe.objects.get(pk=codigo_classe)
     matriculas = Matricula.objects.filter(Q(classe=classe)).order_by('numero')
     linhas = ''
@@ -229,7 +224,7 @@ def exibirTurma(request):
   
     return HttpResponse(tabela)  
     
-    
+#Exibir tela da matrícula  
 def exibirTelaMatricula(request):
     codigo_classe = request.GET.get("classe")
     classe = Classe.objects.get(pk=codigo_classe)
@@ -258,5 +253,5 @@ def exibirTelaMatricula(request):
                     
                     </form>
                     """
-    print(tela)
+   
     return HttpResponse(tela)

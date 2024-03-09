@@ -193,6 +193,27 @@ $(document).ready(() => {
     $("#selecaoClasse").hide();
    
 
+    function carregarClassesRemanejamento(ano, serie) {
+      $.get({
+        url: "{% url 'carregarclassesremanejamento' %}",
+        data: {
+          ano: ano,
+          serie: serie
+        },
+        success: (response) => {
+            $("#classesRemanejamento").html(response);
+        },
+        fail: () => {
+
+        }
+      })
+
+    }
+    $("#selecaoMovimentacao").change(() => {
+        if ($("#selecaoMovimentacao").val() === 'REMA'){
+          carregarClassesRemanejamento($("#anoConfig").val(), $("#classes").val());
+        }
+    });
     function carregarClasses(ano) {
         $.get({
             url: "{% url 'carregarclasses' %}",
@@ -201,7 +222,7 @@ $(document).ready(() => {
             },
             success: (response) =>{
                 $("#classes").html(response);
-                $("#classesRemanejamento").html(response);
+               
             },
             fail: () =>{
 
@@ -291,9 +312,6 @@ $(document).ready(() => {
         })
     }
 
-    
-    
-
     function sendMovimentar() {
         $.get({
             url: "{% url 'movimentar' %}",
@@ -311,9 +329,9 @@ $(document).ready(() => {
                 }, 3000);
                
                 $("#selecaoClasse").hide();
-                carregarClasses($("#anoConfig").val());
+               
                 carregarMovimentacao();
-                
+                //carregarClasses($("#anoConfig").val());
                 carregarMatriculas($("#classes").val());
               
             },
@@ -357,8 +375,8 @@ $(document).ready(() => {
                    $("#dadosMatricula").empty();
                     sendMovimentar();
                   });
-                   $("#dataMovimentacao").val(retornarData());
-                 
+
+                $("#dataMovimentacao").val(retornarData()); 
             },
             fail: (response) => {},
         });
@@ -369,12 +387,16 @@ $(document).ready(() => {
      
     $("#salvarConfig").click(() => 
     {
-
             carregarClasses($("#anoConfig").val());
             $("#corpoTabela").empty();
-
-
     });
+
+    $('#configuracoesModal').on('hidden.bs.modal', function (e) {
+            carregarClasses($("#anoConfig").val());
+            $("#corpoTabela").empty();
+     });
+
+   
     $("#classes").change(() => {
      
         carregarMatriculas($("#classes").val());
@@ -384,7 +406,6 @@ $(document).ready(() => {
     $("#alfabetica").click(() => {
         ordemAlfabetica($("#classes").val());
     });
-
 
 
     $("#selecaoMovimentacao").change( function () {
@@ -397,13 +418,20 @@ $(document).ready(() => {
 
           }
     });
+
+     $('#movimentarModal').on('hidden.bs.modal', function (e) {
+          $("#selecaoClasse").hide();
+          $("#selecaoMovimentacao").val(0);
+
+
+    });
     
 
     $("#dataMatricula").val(retornarData());
    
 
-    function lerArquivoCSV(arquivo, callback) {
-  const leitor = new FileReader();
+  function lerArquivoCSV(arquivo, callback) {
+    const leitor = new FileReader();
 
   leitor.onload = function (evento) {
     const conteudo = evento.target.result;
@@ -420,13 +448,10 @@ inputArquivo.addEventListener('change', function (evento) {
   const arquivo = evento.target.files[0];
         
 
-
   lerArquivoCSV(arquivo, function (conteudo) {
     // Aqui você pode prosseguir para o próximo passo
      $("#uploadMatriculas").prop("hidden",false);
      $("#dataMatricula").prop("hidden",false);
-  
-
       texto = conteudo
   });
 });
@@ -435,8 +460,6 @@ $("#uploadMatriculas").click(() => {
      
       sendMatriculas(texto);
 });
-
-
 
  function sendMatriculas(matriculas){
         console.log(texto);
@@ -460,8 +483,6 @@ $("#uploadMatriculas").click(() => {
             fail: (response) => {},
         });
     }
-
-
 });
 
 

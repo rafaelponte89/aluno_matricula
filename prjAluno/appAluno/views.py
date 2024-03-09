@@ -126,8 +126,6 @@ def atualizarTabela(alunos):
                             <i class="bi bi-arrow-repeat"></i> \
                         </button>'
                 
-                             
-            
         tabela += f"""<tr> {status_rm}
                     <td class="align-middle">{aluno.nome}</td> 
                         <td class="align-middle text-center"> {retornar_ultima_matricula_ativa(aluno)} </td>
@@ -139,11 +137,8 @@ def atualizarTabela(alunos):
                         </td>
                     </tr>"""    
                     
-    #print("Atualizar Tabela", tabela)
     return HttpResponse(tabela)
   
-
-
 
 def cancelarRM(request):
     rm_req = int(request.POST.get('rm'))
@@ -163,7 +158,7 @@ def recarregarTabela(request):
 
 
 def buscar(request):
-    nome = padronizar_nome(request.POST.get("nome").upper().rstrip().lstrip())
+    nome = padronizar_nome(request.POST.get("nome"))
     tamanho = len(nome)
     if (tamanho > REF_TAMANHO_NOME) :
         alunos = Aluno.objects.filter(nome__contains=nome)[:10]
@@ -572,10 +567,10 @@ def buscarRM(request):
         
     return HttpResponse(dados)
        
-       
+#Atualizar registro do aluno      
 def atualizar(request):
     print(request.POST.get("nome"))
-    nome = padronizar_nome(request.POST.get("nome").lstrip().rstrip())
+    nome = padronizar_nome(request.POST.get("nome"))
     ra = request.POST.get("ra")
     dra = request.POST.get("dra").upper()
     dt_nascimento = request.POST.get("dt_nascimento")
@@ -614,7 +609,6 @@ def atualizar(request):
                         telefone.contato = contatos[i]
                     telefone.save()
                 
-            ######
             if tamanho_ra > REF_TAMANHO_RA:
                 aluno.ra = ra
 
@@ -650,6 +644,20 @@ def index(request):
 
     return render(request, 'index.html', context)
 
+
+def carregar_classes(request):
+    ano = request.GET.get('ano')
+    classes = Classe.objects.filter(ano=ano)
+    opcoes = "<option value='0'>Selecione</option>"
+                                            
+    for c in classes:
+        if c.periodo == "M":
+            periodo = "MANHÃ"
+        else:
+            periodo = "TARDE"
+        opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
+        
+    return HttpResponse(opcoes)
 
 def baixar_pdf(request):
    
@@ -707,54 +715,55 @@ def baixar_pdf(request):
     return response
 
 
-# Em desenvolvimento 11/01/2024
-def exibirTurmas(ano=None):
-    lista = Aluno.objects.filter(Q(ano=ano))
-    return lista
+def baixar_lista_telefonica(request):
+    from reportlab.lib.pagesizes import  A4
 
-
-def baixar_pdf_lista_telefonica(request):
-   
-    serie = int(request.GET.get("serie"))
-    turma = int(request.GET.get("turma"))
-    periodo = request.GET.get("periodo")
-    ano = request.GET.get("ano")
+    classe = Classe.objects.get(pk=int(request.POST.get("classe")))
+    matriculas = Matricula.objects.filter(classe=classe)
     
-    alunos = exibirTurmas(serie, turma, periodo, ano)
+    telefones = ''
     elements = []
+    
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, rightMargin=30, leftMargin=50, topMargin=30, bottomMargin=20)
+    doc = SimpleDocTemplate(buffer, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=20, pagesize=(A4[1], A4[0]))
     
-    primeira_linha = ['RM', 'Nome']
+    titulo = "Lista Telefônica " + str(classe)
+    print(titulo)
+    
+    primeira_linha = ['Nº','Nome', 'Telefones']
     data_alunos = []
+    data_alunos.append([titulo])
     data_alunos.append(primeira_linha)
-    stylesheet = getSampleStyleSheet()
-    normalStyle = stylesheet['BodyText']
     
-    for i in range(len(alunos)):
-        if alunos[i].status == 1:
-            data_alunos.append([Paragraph(f'<para align=center size=12><strike>{alunos[i].rm}</strike></para>',normalStyle), Paragraph(f'<para size=12><strike>{alunos[i].nome}</strike></para>')])
-        else:
-            data_alunos.append([Paragraph(f'<para align=center size=12>{alunos[i].rm}</para>',normalStyle), Paragraph(f'<para size=12>{alunos[i].nome}</para>')])
-        
-    style_table = TableStyle(([('GRID',(0,0),(-1,-1), 0.5, colors.white),
+    for m in matriculas:
+        aluno = Aluno.objects.get(pk=m.aluno.rm)
+        tel_aluno = Telefone.objects.filter(aluno=aluno)[:6]
+        for t in tel_aluno:
+            telefones = telefones + str(t) + ' '
+        data_alunos.append([m.numero, m.aluno.nome, telefones])
+        telefones = ''       
+                 
+    style_table = TableStyle(([('GRID',(0,1),(-1,-1), 0.5, colors.gray),
+                               ('SPAN', (0,0), (2,0)),
                             ('LEFTPADDING',(0,0),(-1,-1),6),
                             ('TOPPADDING',(0,0),(-1,-1),4),
                             ('BOTTOMPADDING',(0,0),(-1,-1),3),
                             ('RIGHTPADDING',(0,0),(-1,-1),6),
                             ('ALIGN',(0,0),(-1,-1),'LEFT'),
                              ('ALIGN',(0,0),(0,-1),'CENTER'),
-                            ('BACKGROUND',(0,0),(1,0), colors.lavender),
-                            ('LINEBELOW',(0,0),(-1,-1),1, colors.black),
-                            ('FONTSIZE',(0,0), (-1,-1), 13)
+                            ('BACKGROUND',(0,1),(2,1), colors.lavender),
+                            ('FONTSIZE',(0,0), (-1,-1), 13),
+                            ('BOTTOMPADDING',(0,0),(0,0),20),
+                            ('FONTSIZE',(0,0),(0,0),18),
                             ]))
     
-    t_aluno = Table(data_alunos, style=style_table, hAlign='LEFT', repeatRows=1, colWidths=[60, 450])
+    t_aluno = Table(data_alunos, style=style_table, hAlign='CENTER', 
+                    repeatRows=1)
     
     elements.append(t_aluno)
     
-    doc.build(elements)
-    nome_arquivo = str(rmi) + '_' + str(rmf) + datetime.strftime(datetime.now(),'_%d/%m/%Y_%H_%M_%S')
+    doc.build(elements, )
+    nome_arquivo = str(classe) + datetime.strftime(datetime.now(),'_%d/%m/%Y_%H_%M_%S')
     response = HttpResponse(content_type='application/pdf')
     
     response['Content-Disposition'] = (

@@ -14,7 +14,7 @@ class Aluno (models.Model):
 
     def __str__(self):
        
-        return f'[{self.rm}] {self.nome}'
+        return f'{self.nome}'
     
     # Retorna o último aluno no banco de dados
     def retornarUltimo():
@@ -41,7 +41,7 @@ class Telefone(models.Model):
     numero = models.CharField(max_length=10, default='')
     
     def __str__(self):   
-        return f'{self.numero} - {self.aluno.nome}'
+        return f'{self.numero}'
     
     def retornarListaTelefones():
         return Telefone.TEL_CHOICES

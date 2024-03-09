@@ -238,9 +238,9 @@ $(function(){
   
 
 
-    function exibirTurma(classe){
+    function exibirClasse(classe){
         $.get({
-          url: "{% url 'exibirTurma' %}",
+          url: "{% url 'exibirClasse' %}",
           data: {
             classe: classe
           },
@@ -399,7 +399,7 @@ $(function(){
             $(".visualizar").click(function() {
                   classe = $(this).val();
                    
-                  exibirTurma(classe);
+                  exibirClasse(classe);
             });
 
              $(".atualizar").click(function (){
@@ -433,13 +433,21 @@ $(function(){
 
     });
 
+      $('#configuracoesModal').on('hidden.bs.modal', function (e) {
+     
+     sendListar();
+
+     });
+
     function sendBuscar() {
       let nome = document.getElementById("nomeAluno").value;
+      let ano = $("#anoConfig").val();
       
       $.get({
         url: "{% url 'buscarAluno' %}",
         data: {
           nome: nome,
+          ano: ano
         },
         success: (response) => {
           
