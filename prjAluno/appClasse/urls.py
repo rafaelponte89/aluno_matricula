@@ -4,14 +4,14 @@ from .views import (classe, gravar, atualizar, deletar, listar,
                     adicionarNaClasse, exibirClasses)
 
 urlpatterns = [
-    path('classe', classe, name='classe'),
-    path('classe/gravar', gravar, name='gravarclasse'),
-    path('classe/atualizar', atualizar, name='atualizarclasse'),
-    path('classe/deletar', deletar, name='deletarclasse'),
-    path('classe/listar', listar, name='listarclasse'),
-    path('classe/buscar/', buscar, name='buscarclasse'),
-    path('classe/matriculas', exibirTelaMatricula, name='telamatricular'),
-    path('classe/buscarAluno', buscarAluno, name='buscarAluno'),
-    path('classe/adicionarNaClasse', adicionarNaClasse, name='adicionarNaClasse'),
-    path('classe/exibirClasse', exibirClasses, name='exibirClasse')
+    path('/classe', classe, name='classe'),
+    path('gravarclasse', gravar, name='gravarclasse'),
+    path('atualizarclasse', atualizar, name='atualizarclasse'),
+    path('deletarclasse', deletar, name='deletarclasse'),
+    path('listarclasse', listar, name='listarclasse'),
+    path('buscarclasse', buscar, name='buscarclasse'),
+    path('telamatricular', exibirTelaMatricula, name='telamatricular'),
+    path('buscarAluno', buscarAluno, name='buscarAluno'),
+    path('adicionarNaClasse', adicionarNaClasse, name='adicionarNaClasse'),
+    path('exibirClasse', exibirClasses, name='exibirClasse')
 ]

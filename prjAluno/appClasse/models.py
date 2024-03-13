@@ -11,10 +11,10 @@ class Classe(models.Model):
         ("M","MANHÃ"),
         ("T","TARDE"),
     )
-    serie = models.CharField(max_length=1, default='')
-    turma = models.CharField(max_length=1, default='')
-    ano = models.CharField(max_length=4, default='')
-    periodo = models.CharField(max_length=1, choices=PERIODO_CHOICES, default='')
+    serie = models.CharField(max_length=1, blank=False, null=False )
+    turma = models.CharField(max_length=1, blank=False, null=False)
+    ano = models.CharField(max_length=4, blank=False, null=False)
+    periodo = models.CharField(max_length=1, choices=PERIODO_CHOICES, blank=False, null=False)
     
     def __str__(self):
         if self.periodo == "M":

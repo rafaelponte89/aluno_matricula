@@ -1,13 +1,14 @@
 
 function verificarConfiguracao() {
+ 
   //Carregar seleção versão
   if(localStorage.getItem("completa")){
-    $("#topo").show();
+    //$("#topo").show();
     $("#menu").show();
     $("#versaoCompleta").prop("checked",true);
   }
   else {
-    $("#topo").hide();
+    //$("#topo").hide();
     $("#menu").hide();
     $("#versaoCompleta").prop("checked",false);
   }
@@ -132,56 +133,42 @@ var anoConfig = document.getElementById("anoConfig");
 
 //quando clica no botão salvar de configuração
 salvarConfig.addEventListener("click", function () {
-  if(anoConfig.value !== '') {
-    localStorage.setItem("anoConfig", anoConfig.value);
-    document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
-    anoConfig.value = localStorage.getItem("anoConfig");
-  }
-  else {
-    const date = new Date();
-    const currentYear = date.getFullYear();
-    localStorage.setItem("anoConfig", currentYear);
-    document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
-    anoConfig.value = localStorage.getItem("anoConfig");
-
-  }
-  if (autoPreenchimento.checked) {console.log("automatico");
-    localStorage.setItem("automatico", true);
-    
-  } else {
-    localStorage.removeItem("automatico");
-   
-    limparStorage();
-  }
-  verificarConfiguracao();
+  setarConfigAno();
+ 
   
 });
 
 $('#configuracoesModal').on('hidden.bs.modal', function (e) {
-  
-  if(anoConfig.value !== '') {
-    localStorage.setItem("anoConfig", anoConfig.value);
+  setarConfigAno();
+
+});
+
+
+function setarConfigAno() {
+  if (localStorage.getItem("anoConfig")) { 
+   
+    if ($("#anoConfig").val() !== ''){
+
+      localStorage.setItem("anoConfig",$("#anoConfig").val());
+      document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
+      document.getElementById("anoConfig").value = localStorage.getItem("anoConfig");
+      
+    }
+    else {
+      const date = new Date();
+    const currentYear = date.getFullYear();
+    localStorage.setItem("anoConfig",currentYear);
     document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
-    anoConfig.value = localStorage.getItem("anoConfig");
+    document.getElementById("anoConfig").value = localStorage.getItem("anoConfig");
+    }
   }
   else {
     const date = new Date();
     const currentYear = date.getFullYear();
-    localStorage.setItem("anoConfig", currentYear);
+    localStorage.setItem("anoConfig",currentYear);
     document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
-    anoConfig.value = localStorage.getItem("anoConfig");
-
+    document.getElementById("anoConfig").value = localStorage.getItem("anoConfig");
   }
-  if (autoPreenchimento.checked) {console.log("automatico");
-    localStorage.setItem("automatico", true);
-    
-  } else {
-    localStorage.removeItem("automatico");
-   
-    limparStorage();
-  }
-  verificarConfiguracao();
-
-})
+}
 
 verificarConfiguracao();

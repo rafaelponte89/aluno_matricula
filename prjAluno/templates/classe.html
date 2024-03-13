@@ -1,4 +1,8 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} 
+
+
+
+{% block content %}
 
 <div class="row">
   <div id="mensagens" class="col-12"></div>
@@ -232,242 +236,18 @@
 
 
 
-
-<script type="text/javascript">
-$(function(){
-  
-
-
-    function exibirClasse(classe){
-        $.get({
-          url: "{% url 'exibirClasse' %}",
-          data: {
-            classe: classe
-          },
-          success: (response) => {
-              $("#alunosClasse").html(response);  
-              
-          },
-          fail: (response) => {
-
-          }
-        })
-    }
-
-    function exibirTelaMatricula(classe) {
-      $.get({
-        url: "{% url 'telamatricular' %}",
-        data: {
-          classe: classe
-        },
-        success: (response) => {
-            $("#nomeAluno").off("keyup");
-            $("#dadosMatricula").html(response);
-            $("#nomeAluno").keyup(()=> sendBuscar());
-        
-        },
-        fail: (response) => {
-            alert("Erro na matricula");
-        }
-      });
-    }
-
-    // buscar classe
-    function buscarClasse(classe){
-
-        $.get({
-            url: "{% url 'buscarclasse' %}",
-            data: {
-                classe: classe
-            },
-            success: (response) => {
-                $("#simAtualizar").off("click");
-                $("#simDeletar").off("click");
-                $("#dadosClasse").html(response);
-                  $("#simAtualizar").click( function (){
-                    sendAtualizar();
-                  });
-                  $("#simDeletar").click(function () {
-                    sendDeletar();
-                  });
-            },
-            fail: (response) => {},
-        });
-    }
-
-    function sendDeletar() {
-        $.get({
-            url: "{% url 'deletarclasse' %}",
-            data: {
-                classe: $("#codClasse").val()
-            },
-            success:(response) => {
-                 $("#mensagens").html(response);
-                 setTimeout(function () {
-                 $("#mensagem").css("display", "none");
-                }, 3000);
-                sendListar();
-            },
-            fail: (response) => { $("#mensagens").html(response);}
-        });
-    }
-
-    function sendAtualizar() {
-        $.get({
-            url: "{% url 'atualizarclasse' %}",
-            data: {
-                ano: $("#anoConfig").val(),
-                classe: $("#codClasse").val(),
-                serie: $("#serieAtualizar").val(),
-                turma: $("#turmaAtualizar").val(),
-                periodo: $("#periodoAtualizar").val()
-                
-            },
-            success: (response) => {
-                $("#mensagens").html(response);
-                 setTimeout(function () {
-                 $("#mensagem").css("display", "none");
-                }, 3000);
-                sendListar();
-               
-            },
-            fail: (response) => {
-                $("#mensagens").html(response);
-            }
-        });
-    }
-   
-    function adicionarNaClasse(aluno) {
-        console.log($("#dataMatricula").val());
-        $.get({
-          url: "{% url 'adicionarNaClasse' %}",
-          data: {
-            ano: $("#ano").html(),
-            classe: $("#codClasseMatricula").val(),
-            aluno: aluno,
-            data_matricula: $("#dataMatricula").val()
-          },
-          success: (response) => {
-             $("#mensagensModal").html(response);
-            setTimeout(function () {
-             $("#mensagemModal").css("display", "none");
-            }, 3000);
-              
-          },
-          fail: (response) => {
-
-          }
-        });
-    }
-
-    function sendGravar() {
-        $.get({
-        url: "{% url 'gravarclasse' %}",
-        data: {
-            ano: $("#anoConfig").val(),
-            serie: $("#serie").val(),
-            turma: $("#turma").val().toUpperCase(),
-            periodo: $("#periodo").val()
-        },
-        success: (response) => {
-            $("#mensagens").html(response);
-            setTimeout(function () {
-             $("#mensagens").empty();
-            }, 3000);
-            sendListar();
-            verificarRepeticao();
-            $(":input").val('');
-          
-            preencherAutomatico();
-        },
-        fail: (response) => {},
-      });
-    }
-
-    function sendListar() {
-       
-        $.get({
-        url: "{% url 'listarclasse' %}",
-        data: {
-            ano: $("#anoConfig").val(),
-        },
-        success: (response) => {
-            $("#corpoTabela").html(response);
-            $(".visualizar").off("click");
-            $(".atualizar").off("click");
-            $(".matricular").off("click");
-            $(".visualizar").click(function() {
-                  classe = $(this).val();
-                   
-                  exibirClasse(classe);
-            });
-
-             $(".atualizar").click(function (){
-                  classe = $(this).val();
-              
-                  buscarClasse(classe);                               
-            });
-
-             $(".matricular").click(function (){
-                  classe = $(this).val();
-                 
-                  exibirTelaMatricula(classe);                               
-            });    
-        },
-        fail: (response) => {},
-      });
-    }
-
-  
-   
-    $("#gravar").click(()=> {
-        sendGravar();
-        sendListar();
-    });
-
-   
-
-    $("#salvarConfig").click(() => {
-       
-        sendListar();
-
-    });
-
-      $('#configuracoesModal').on('hidden.bs.modal', function (e) {
-     
-     sendListar();
-
-     });
-
-    function sendBuscar() {
-      let nome = document.getElementById("nomeAluno").value;
-      let ano = $("#anoConfig").val();
-      
-      $.get({
-        url: "{% url 'buscarAluno' %}",
-        data: {
-          nome: nome,
-          ano: ano
-        },
-        success: (response) => {
-          
-          $("#tabelaAlunos").html(response);
-          $(".adicionarNaClasse").off("click");
-           $(".adicionarNaClasse").click(function (){
-                  aluno = $(this).val();            
-                  adicionarNaClasse(aluno); 
-                  $(this).addClass("disabled");                                  
-            });
-        },
-      });
-    }
-  
-    sendListar();
-});
-
-</script>
 {% endblock content %}
-        
+{% load static %}
+
+    {% block script %} 
+        <script
+      type="text/javascript"
+      src="{% static 'appClasse/js/classe.js' %}"
+    ></script> 
+    
+    {% endblock script %}
+
+       
         
         
         

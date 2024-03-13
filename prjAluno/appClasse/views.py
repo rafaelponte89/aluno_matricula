@@ -7,9 +7,8 @@ from datetime import datetime
 from django.db.models import Q
 from utilitarios.utilitarios import criarMensagem, criarMensagemModal
 from appMatricula.views import verificar_matricula_ativa_no_ano
+
 # Create your views here.
-
-
 def classe(request): 
     context = {
         'periodos': Classe.PERIODO_CHOICES
@@ -38,14 +37,10 @@ def buscar(request):
     corpo = f"""<form>
                     <input type='hidden' id='codClasse' value={classe.id} />
                     <div class='row'>
-                    
-                  
-                    
                     <div class='col form-group'> 
                     <label for='serieAtualizar'>Série</label>
                     <input id='serieAtualizar' class='form-control' type='number' value={classe.serie} \>
-                    </div>
-                              
+                    </div>            
                      <div class='col form-group'> 
                       <label for='turmaAtualizar'>Turma</label>
                     <input id='turmaAtualizar' class='form-control' type='text' value={classe.turma} \>
@@ -54,13 +49,10 @@ def buscar(request):
                       <label for='periodoAtualizar'>Período</label>
                     <select id='periodoAtualizar' class='form-control' >
                      {opcoes_periodo}
-                    
                     </select>
                     </div>
-                    
-                    </div>
-                    
-                    </form>
+                    </div> 
+                </form>
                     """
     
     return HttpResponse(corpo)
@@ -84,7 +76,6 @@ def gravar(request):
         return criarMensagem('Classe salva com sucesso!!!', 'success')
 
     except:
-        
         return criarMensagem('Erro ao gravar!!!', 'danger')
     
 #Deletar classe
