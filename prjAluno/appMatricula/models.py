@@ -24,7 +24,7 @@ class Matricula(models.Model):
         return f'{self.aluno} - {self.classe}' 
     
     class Meta:
-        unique_together = ['id', 'ano', 'aluno', 'situacao', 'data_matricula']   
+        unique_together = ['ano', 'aluno', 'situacao', 'data_matricula','data_movimentacao']   
     
     def retornarSituacao():
         return Matricula.SITUACAO

@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
 from appClasse.models import Classe
+
 from appAluno.models import Aluno
 from .models import Matricula
 from django.db.models import Q
@@ -21,12 +22,21 @@ def adicionar(reqeust):
 def deletar(request):
     pass
 
+def matricular_aluno(ano, classe, aluno, numero, data_matricula, data_movimentacao=None, situacao='C'):
+    matricula_nova = Matricula(ano=ano, classe=classe, aluno=aluno, 
+                                numero=numero,
+                                data_matricula=data_matricula, 
+                                data_movimentacao=data_movimentacao,
+                                situacao=situacao,
+                                )
+
+    matricula_nova.save()
 
 def movimentar(request):
     
     try:
+       
         matricula = Matricula.objects.get(pk=request.GET.get('matricula'))
-        classe = (Classe.objects.get(pk=request.GET.getlist('classe_remanejamento')[0]) if (request.GET.getlist('classe_remanejamento')[0]) != '0' else None)
         movimentacao = request.GET.getlist('movimentacao')[0]
         data_movimentacao = request.GET.get('data_movimentacao')
         matricula.ano = request.GET.get('ano')
@@ -36,21 +46,17 @@ def movimentar(request):
         
         if(movimentacao == "REMA"):
             if (verificar_matricula_ativa_no_ano(matricula.ano, matricula.aluno.rm)):
-                matricula_nova = Matricula()
-                matricula_nova.classe = classe
-                matricula_nova.aluno = matricula.aluno
-                matricula_nova.numero = Classe.retornarProximoNumeroClasse(Matricula, classe)
-                matricula_nova.situacao = 'C'
-                matricula_nova.ano = request.GET.get('ano')
-                matricula_nova.classe = classe
-                matricula_nova.data_matricula = data_movimentacao
-                matricula_nova.save()
+                classe = (Classe.objects.get(pk=request.GET.getlist('classe_remanejamento')[0]) if (request.GET.getlist('classe_remanejamento')[0]) != '0' else None)
+                matricular_aluno(request.GET.get('ano'),classe, matricula.aluno,
+                                 Classe.retornarProximoNumeroClasse(Matricula, classe),
+                                 data_movimentacao)
                 return criarMensagem("Remanejamento efetuado!", "success")
             else:
                 return criarMensagem("Aluno com matrícula ativa no Ano!!!","danger")
         elif (movimentacao == "BXTR"):
-           
-           
+            aluno = Aluno.objects.get(pk=matricula.aluno.rm)
+            aluno.status = 0
+            aluno.save()
             return criarMensagem("Transferência efetuada!", "success")
         else:
              return criarMensagem("Movimentação efetuada!", "success")
@@ -154,7 +160,7 @@ def carregar_linhas(classe, ordem="numero"):
         if m.situacao == "C":
             situacao = "CURSANDO"
             cor = "text-primary"
-        elif m.situacao == "BXTR":
+        elif m.situacao == "BXTR" or m.situacao == "TRAN":
             situacao = "TRANSFERIDO"
             cor = "text-danger"
         elif m.situacao == "REMA":
@@ -187,14 +193,13 @@ def carregar_linhas(classe, ordem="numero"):
 
 
 def excluir_matricula(request):
-    try:
+  
         matricula = request.GET.get('matricula')
         matricula = Matricula.objects.get(pk=matricula)
-        matricula.delete()
-        return criarMensagem("Matrícula excluída com sucesso!", "success")
+        if matricula:
+            matricula.delete()
+            return criarMensagem("Matrícula excluída com sucesso!", "success")
     
-    except Exception as e:
-        return criarMensagem(f"Matrícula não excluída!!!{e}", "warning")
     
     
 def buscar_matricula(request):
@@ -222,49 +227,42 @@ def buscar_matricula(request):
                     <div class='col form-group'> 
                     <label for='dataMovimentacao'>Data Movimentação</label>
                     <input id='dataMovimentacao' class='form-control' type='date' value='{matricula.data_movimentacao}' \>
-                    </div>
-                              
-        
-                    
-                    </div>
-                    
-                    </form>
-                    """
+                    </div>     
+                    </div> 
+                </form>
+                """
     
     return HttpResponse(corpo)
     
-    
+
 def carregar_matriculas(request):
     classe = request.GET.getlist('classe')[0]
-    linhas = carregar_linhas(classe, 'numero')
-    
+    linhas = carregar_linhas(classe, 'numero')  
     return HttpResponse(linhas)
 
 
 # Verificar se existe matrícula ativa no ano, se não possuir pode matricular
 # Se possuir não pode
 def verificar_matricula_ativa_no_ano(ano, rm, situacao='C'):
-    try:
-        matriculas = Matricula.objects.filter(Q(ano=ano) & Q(aluno_id=rm) & Q(situacao=situacao))  
-        if len(matriculas) == 0:
-            print('sem matricula') 
-            return True
-        else:
-            print('com matricula')
-            return False
+    matriculas = Matricula.objects.filter(Q(ano=ano) & Q(aluno_id=rm) & Q(situacao=situacao))  
+    return False if matriculas else True   
         
-    except Exception as e:
-        print(e)
-        
-        
+
+def deletar_todas_matriculas_da_classe(classe):
+    matriculas = Matricula.objects.filter(classe=classe)
+    matriculas.delete()
+    for matricula in matriculas:
+        aluno = Aluno.objects.filter(rm=matricula.aluno.rm)
+        aluno.status = 0
+        aluno.save()
+    
+    
 # EM DESENVOLVIMENTO 26/02/2024
 # modulo que efetuará todas as matrículas através de uma arquivo csv do próprio SED
 def upload_matriculas(request):
     try:
         matriculas = request.GET.get('matriculas')
-        cod_byte = matriculas.encode('utf-8')
-        cod_str = cod_byte.decode('utf-8')
-        linhas = cod_str.split('\n')
+        linhas = ((matriculas.encode('utf-8')).decode('utf-8')).split('\n')
         linhas_array = []
         classe = int(request.GET.get('classe'))
         classe = Classe.objects.get(pk=classe)
@@ -272,11 +270,8 @@ def upload_matriculas(request):
        
         data_matricula = request.GET.get('data_matricula')
         
-        matriculas = Matricula.objects.filter(classe=classe)
+        deletar_todas_matriculas_da_classe(classe)
         
-        for matricula in matriculas:
-            matricula.delete()
-       
         for linha in range(3, len(linhas)):
             linhas_array.append(linhas[linha].split(';'))
     
@@ -294,7 +289,8 @@ def upload_matriculas(request):
             for cod in rm:
                 aluno = Aluno.objects.get(pk=cod['rm'])
                 
-                if (verificar_matricula_ativa_no_ano(ano, aluno.rm)):
+                if (verificar_matricula_ativa_no_ano(ano, aluno.rm) or data_movimentacao):
+                    aluno.status = 2
                     numero = Classe.retornarProximoNumeroClasse(Matricula, classe)
                     print("Situação",situacao)
                     print("Data Movimentacao",data_movimentacao)
@@ -303,7 +299,8 @@ def upload_matriculas(request):
                                     situacao=situacao, 
                                     data_matricula=data_matricula, numero=numero, data_movimentacao=data_movimentacao)
             
-                    matricula.save()                
+                    matricula.save()
+                    aluno.save()                
                 
         return HttpResponse(carregar_linhas(classe))
     

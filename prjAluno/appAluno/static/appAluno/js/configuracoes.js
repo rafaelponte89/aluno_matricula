@@ -13,6 +13,18 @@ function verificarConfiguracao() {
     $("#versaoCompleta").prop("checked",false);
   }
 
+  //Carregar filtros
+  if(localStorage.getItem("filtro")){
+      //$("#topo").show();
+      if(localStorage.getItem("filtro") === 'a'){
+          $("#ativos").prop("checked",true);
+      }
+      else{
+        $("#todos").prop("checked",true);
+      }
+
+  }
+
   //Carregar preenchimento automatico
   if (localStorage.getItem("automatico")) {
     autoPreenchimento.checked = true;
@@ -134,12 +146,26 @@ var anoConfig = document.getElementById("anoConfig");
 //quando clica no botão salvar de configuração
 salvarConfig.addEventListener("click", function () {
   setarConfigAno();
+  verificarConfiguracao();
  
   
 });
 
 $('#configuracoesModal').on('hidden.bs.modal', function (e) {
   setarConfigAno();
+  verificarConfiguracao();
+});
+
+$('#todos').change(() => {
+  alert('todos');
+  localStorage.setItem("filtro", 't');
+
+
+
+});
+$('#ativos').change(() => {
+
+  localStorage.setItem("filtro", 'a');
 
 });
 
@@ -156,10 +182,10 @@ function setarConfigAno() {
     }
     else {
       const date = new Date();
-    const currentYear = date.getFullYear();
-    localStorage.setItem("anoConfig",currentYear);
-    document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
-    document.getElementById("anoConfig").value = localStorage.getItem("anoConfig");
+      const currentYear = date.getFullYear();
+      localStorage.setItem("anoConfig",currentYear);
+      document.getElementById("ano").innerHTML = localStorage.getItem("anoConfig");
+      document.getElementById("anoConfig").value = localStorage.getItem("anoConfig");
     }
   }
   else {

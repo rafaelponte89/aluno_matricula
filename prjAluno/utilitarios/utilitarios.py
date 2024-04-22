@@ -4,7 +4,6 @@ from pydrive.drive import GoogleDrive
 from datetime import datetime
 
 
-
 def criarMensagemModal(texto, tipo):
     mensagem = HttpResponse(f"<div style='display:block;' id='mensagemModal' class='alert alert-{tipo}' role='alert' >{texto} </div>")
     return  mensagem
@@ -17,7 +16,7 @@ def criarMensagem(texto, tipo):
 def padronizar_nome(nome):
     acentuados = {'Á':'A','Ã':'A','Â':'A','É':'E','Ê':'E','Í':'I','Î':'I','Ó':'O','Õ':'O','Ô':'O','Ú':'U','Û':'U','Ç':'C','\'':'','\`':''}   
     #acentuados = {'Á':'A','Ã':'A','Â':'A','É':'E','Ê':'E','Í':'I','Î':'I','Ó':'O','Õ':'O','Ô':'O','Ú':'U','Û':'U'}   
-    nome = nome.upper().rstrip().lstrip()
+    nome = nome.upper().strip()
     letra_nova = ''
     for letra in nome:
         if letra in acentuados.keys():
