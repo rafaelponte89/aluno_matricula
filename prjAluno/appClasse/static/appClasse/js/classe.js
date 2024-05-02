@@ -39,12 +39,18 @@ $(document).ready(() => {
       success: (response) => {
         $("#simAtualizar").off("click");
         $("#simDeletar").off("click");
+        $("#gerarTurmas").off("click");
+      
         $("#dadosClasse").html(response);
         $("#simAtualizar").click(function () {
           sendAtualizar();
         });
         $("#simDeletar").click(function () {
           sendDeletar();
+        });
+
+        $("#gerarTurmas").click(function () {
+            gerarTurmas();
         });
       },
       fail: (response) => {},
@@ -62,6 +68,8 @@ $(document).ready(() => {
         setTimeout(function () {
           $("#mensagem").css("display", "none");
         }, 3000);
+
+     
         sendListar();
       },
       fail: (response) => {
@@ -224,6 +232,7 @@ $(document).ready(() => {
       success: (response) => {
         $("#quadroClasse").html(response);
         
+        
       },
       fail: () => {},
     });
@@ -258,12 +267,15 @@ $(document).ready(() => {
       },
       success: (response) => {
        alert(response);
+        sendListar();
       },
     });
   }
 
   $("#gerarTurmas").click(()=>{
     gerarTurmas();
+    sendListar();
+    
   });
 
 });

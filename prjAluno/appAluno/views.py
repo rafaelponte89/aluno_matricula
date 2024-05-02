@@ -6,7 +6,7 @@ from .forms import frmAluno
 from django.http import HttpResponse
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
-from utilitarios.utilitarios import criarMensagem, padronizar_nome, realizar_backup_v2
+from utilitarios.utilitarios import criarMensagem, padronizar_nome, realizar_backup_v2, anonimizarDado
 import io
 from os import path
 from reportlab.lib import colors
@@ -590,7 +590,7 @@ def baixar_lista_telefonica(request):
                             ]))
     
     t_aluno = Table(data_alunos, hAlign='CENTER', 
-                    repeatRows=1)
+                    repeatRows=1, style=style_table)
     
     elements.append(t_aluno)
     
@@ -607,8 +607,36 @@ def baixar_lista_telefonica(request):
     return response
 
 
+
+
+## Nova Personalizável
+def footer(canvas, doc, content):
+    canvas.saveState()
+    w, h = content.wrap(doc.width, doc.bottomMargin)
+    content.drawOn(canvas, doc.leftMargin, h)
+
+    canvas.restoreState()
+
+def header_and_footer(canvas, doc, header_content, footer_content):
+    header(canvas, doc, header_content,)
+    footer(canvas, doc, footer_content)
+
 def baixar_lista_alunos_personalizavel(request):
     from reportlab.lib.pagesizes import A4
+    from reportlab.platypus.paragraph import Paragraph
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import cm
+    from reportlab.platypus import SimpleDocTemplate, PageTemplate
+    from reportlab.platypus.frames import Frame
+    from reportlab.lib import pagesizes
+    from reportlab.platypus.paragraph import Paragraph
+    from functools import partial
+
+    def header(canvas, doc, content):
+        canvas.saveState()
+        w, h = content.wrap(doc.width, doc.topMargin)
+        content.drawOn(canvas, doc.leftMargin, doc.height + doc.bottomMargin + doc.topMargin - h)
+        canvas.restoreState()
 
     classe = Classe.objects.get(pk=int(request.POST.get("classe")))
 
@@ -630,22 +658,51 @@ def baixar_lista_alunos_personalizavel(request):
     matriculas = (Matricula.objects.filter(classe=classe).
                   filter(situacao='C').
                   order_by('aluno__nome'))
-    
-    elements = []
+
     
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, rightMargin=30, leftMargin=30,
-                            topMargin=30, bottomMargin=20,
-                            pagesize=tamanho_pagina)
-    
+
     titulo = str(titulo_lista) + " - " + str(classe)
     print(titulo)
-    
     primeira_linha = ['Nº','Nome']
     primeira_linha.extend(colunas_em_branco)
     data_alunos = []
     data_alunos.append([titulo])
     data_alunos.append(primeira_linha)
+
+
+
+    style = ParagraphStyle(
+        name='Normal',
+        fontSize=10,
+        alignment=1
+    )
+
+
+
+    pdf = SimpleDocTemplate(buffer, pagesize=tamanho_pagina, 
+        leftMargin = 1.5 * cm, 
+        rightMargin = 1.5 * cm,
+        topMargin = 1.5 * cm, 
+        bottomMargin = 0.5 * cm)
+
+    frame = Frame(pdf.leftMargin, pdf.bottomMargin, pdf.width, pdf.height, id='normal')
+    
+    if tipo_pagina == 'r':
+        espacos = "&nbsp;" *52
+        header_content =( Paragraph(f"""
+                               <strong><font size="18">EMEB PROFª VICTÓRIA OLIVITO NONINO </font></strong> <br/>
+                                 Rua 14, 1303 A - Conjunto Habtacional José Luís Simões - Orlândia - SP - (16)3820-8230  <br/>
+                                 <img src="appAluno/static/appAluno/jpeg/logo_prefeitura.jpg" valign="middle" height="50" width="50" />{espacos}victorianonino@gmail.com {espacos}<img src="appAluno/static/appAluno/jpeg/logo_escola.jpg" valign="middle" height="50" width="50" />""", style=style ) )
+      
+    
+    else:
+        espacos = "&nbsp;" * 53
+        header_content =( Paragraph(f"""
+                               <strong><font size="18">EMEB PROFª VICTÓRIA OLIVITO NONINO </font></strong> <br/>
+                                 Rua 14, 1303 A - Conjunto Habtacional José Luís Simões - Orlândia - SP - (16)3820-8230  <br/>
+                                 <img src="appAluno/static/appAluno/jpeg/logo_prefeitura.jpg" valign="middle" height="50" width="50" />{espacos}victorianonino@gmail.com {espacos}<img src="appAluno/static/appAluno/jpeg/logo_escola.jpg" valign="middle" height="50" width="50" />""", style=style ) )
+                     
     
     count = 0
     linha = ''
@@ -676,19 +733,17 @@ def baixar_lista_alunos_personalizavel(request):
     
     t_aluno = Table(data_alunos, style=style_table, hAlign='CENTER', 
                     repeatRows=2)
+
+    template = PageTemplate(id='test', frames=frame, onPage=partial(header, content=header_content))
+
+    pdf.addPageTemplates([template])
+
+
     
-    
-    
-    elements.append(t_aluno)
-    
-    print(elements)
-    
-    doc.build(elements, )
-    nome_arquivo = str(classe) + datetime.strftime(datetime.now(),'_%d/%m/%Y_%H_%M_%S')
+    # conteudo
+    pdf.build([t_aluno], onLaterPages=partial(header, content=header_content))
+
     response = HttpResponse(content_type='application/pdf')
-    
-    response['Content-Disposition'] = (
-        f'attachment; filename={nome_arquivo}.pdf')
     
     response.write(buffer.getvalue())
     buffer.close()

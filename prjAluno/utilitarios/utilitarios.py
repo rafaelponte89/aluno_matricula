@@ -3,6 +3,14 @@ from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from datetime import datetime
 
+def anonimizarDado(dado):
+    sigla = ''
+    lista_dado = str(dado).split(' ')
+    print(lista_dado)
+    for dado in lista_dado:
+        sigla += dado[-1]
+    
+    return sigla
 
 def criarMensagemModal(texto, tipo):
     mensagem = HttpResponse(f"<div style='display:block;' id='mensagemModal' class='alert alert-{tipo}' role='alert' >{texto} </div>")
@@ -14,7 +22,7 @@ def criarMensagem(texto, tipo):
     return  mensagem
 
 def padronizar_nome(nome):
-    acentuados = {'Á':'A','Ã':'A','Â':'A','É':'E','Ê':'E','Í':'I','Î':'I','Ó':'O','Õ':'O','Ô':'O','Ú':'U','Û':'U','Ç':'C','\'':'','\`':''}   
+    acentuados = {'Á':'A','Ã':'A','Â':'A','É':'E','Ê':'E','Í':'I','Î':'I','Ó':'O','Õ':'O','Ô':'O','Ú':'U','Û':'U','Ç':'C','\'':'','`':''}   
     #acentuados = {'Á':'A','Ã':'A','Â':'A','É':'E','Ê':'E','Í':'I','Î':'I','Ó':'O','Õ':'O','Ô':'O','Ú':'U','Û':'U'}   
     nome = nome.upper().strip()
     letra_nova = ''
@@ -54,11 +62,11 @@ def migrar_dados_aluno_serie():
                 alunos[i].serie = ls_arquivo_csv[j][0]
                 alunos[i].turma = ls_arquivo_csv[j][1]
                 if (ls_arquivo_csv[j][1] == 'A' or ls_arquivo_csv[j][1] == 'B'):
-                    alunos[i].periodo='M'
+                    alunos[i].periodo = 'M'
                 elif (ls_arquivo_csv[j][1] == 'C' or ls_arquivo_csv[j][1] == 'D' or ls_arquivo_csv[j][1] == 'E'):
-                    alunos[i].periodo= 'T'
+                    alunos[i].periodo = 'T'
                 else:
-                    alunos[i].periodo= ''
+                    alunos[i].periodo = ''
 
                 alunos[i].ano = ls_arquivo_csv[j][2]
                 alunos[i].save()
@@ -69,6 +77,8 @@ def migrar_dados_aluno_serie():
             j += 1
         j = 0
     print(acumulador)
+    
+    
 # Migração para base de dados
 def migrar_dados_aluno():
     alunos = Aluno.objects.filter(rm__gte=3520)
@@ -148,14 +158,14 @@ def realizar_backup_v2(request):
         #gauth.LocalWebserverAuth()
    
         #gauth.LocalWebserverAuth()
-        arquivo = "db.sqlite3"
+        arquivo = "db_.sqlite3"
         gfile = drive.CreateFile({'parents': [{'id': '1TeRTAGnqX8gkBvFDQovVGtZrvm8GhK0s'}]})
         gfile.SetContentFile(f"bd/{arquivo}")
         gfile.Upload()
         criar_log("Salvo com sucesso", f"Upload {arquivo}")
         return criarMensagem(f"Backup Efetuado na Nuvem!!! Arquivo: {arquivo}", "info")
-    except(Exception):
-        return criarMensagem(f"Falha no Backup!!!", "danger")
+    except Exception as e:
+        return criarMensagem(f"Falha no Backup!!!{e}", "danger")
 
   
 
