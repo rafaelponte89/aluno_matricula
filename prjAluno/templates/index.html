@@ -64,6 +64,7 @@
         <th class="text-center">Telefone</th>
         <th class="text-center">RA</th>
         <th class="text-center">Atualizar</th>
+        <th class="text-center">Declaração</th>
       </thead>
       <tbody id="corpoTabela">
         <!-- Tabela dinâmica aparece aqui -->
@@ -351,20 +352,19 @@
         },
         success: (response) => {
           $("#corpoTabela").html(response);
-          let advertencias = document.getElementsByClassName("advertencia");
-          for (let i = 0; i < advertencias.length; i++) {
-            advertencias[i].addEventListener("click", function () {
-              buscarAlunoCancelar(advertencias[i].value);
-            });
-          }
-          let botoes_atualizar = document.getElementsByClassName("atualizar");
-          for (let i = 0; i < botoes_atualizar.length; i++) {
-            //alert(botoes_atualizar[i].value);
-            botoes_atualizar[i].addEventListener("click", function () {
-              //sendAtualizar(botoes_atualizar[i].value);
-              buscarAluno(botoes_atualizar[i].value);
-            });
-          }
+
+          $(".advertencia").off("click");
+          $(".advertencia").click(function () {
+            buscarAlunoCancelar($(this).val());
+          });
+          $(".atualizar").off("click");
+          $(".atualizar").click(function () {
+            buscarAluno($(this).val());
+          });
+          $(".declaracao").off("click");
+          $(".declaracao").click(function () {
+            sendBaixarDeclaracao($(this).val());
+          });
         },
       });
     }
@@ -446,7 +446,34 @@
           tam_colunas: $("#tamanho").val(),
           pagina: $("#pagina").val(),
           repeticao: $("#repeticao").val(),
-          tamanho_fonte: $("#tamanho_fonte").val()
+          tamanho_fonte: $("#tamanho_fonte").val(),
+        },
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        success: (response) => {
+          var blob = new Blob([response], { type: "application/pdf" });
+
+          if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(blob); // for IE
+          } else {
+            var fileURL = URL.createObjectURL(blob);
+            var newWin = window.open(fileURL);
+            newWin.focus();
+          }
+        },
+      });
+    }
+
+    function sendBaixarDeclaracao(rm) {
+      $.post({
+        url: "{% url 'baixardeclaracao' %}",
+        // datatype: 'pdf',
+        data: {
+          rm: rm,
+          nome_op: localStorage.getItem('nomeOperador'),
+          cargo_op: localStorage.getItem('cargoOperador'),
+          rg_op: localStorage.getItem('rgOperador')
         },
         headers: {
           "X-CSRFToken": csrftoken,
@@ -471,22 +498,20 @@
         url: "{% url 'recarregarTabela' %}",
         success: (response) => {
           $("#corpoTabela").html(response);
-          let advertencias = document.getElementsByClassName("advertencia");
-          for (let i = 0; i < advertencias.length; i++) {
-            advertencias[i].addEventListener("click", function () {
-              buscarAlunoCancelar(advertencias[i].value);
-            });
-          }
-
-          let botoes_atualizar = document.getElementsByClassName("atualizar");
-          for (let i = 0; i < botoes_atualizar.length; i++) {
-            //alert(botoes_atualizar[i].value);
-            botoes_atualizar[i].addEventListener("click", function () {
-              //sendAtualizar(botoes_atualizar[i].value);
-
-              buscarAluno(botoes_atualizar[i].value);
-            });
-          }
+         
+          $(".advertencia").off("click");
+          $(".advertencia").click(function () {
+            buscarAlunoCancelar($(this).val());
+          });
+          $(".atualizar").off("click");
+          $(".atualizar").click(function () {
+            buscarAluno($(this).val());
+          });
+        
+          $(".declaracao").off("click");
+          $(".declaracao").click(function () {
+            sendBaixarDeclaracao($(this).val());
+          });
         },
         fail: (response) => {},
       });
@@ -551,7 +576,6 @@
           novos_tel: novTelefones,
         },
         success: (response) => {
-          verificarRepeticao();
           $("#gravar").off("click");
           $("#id_nome").off("keyup");
           $("#id_ra").off("keypress");
@@ -711,11 +735,6 @@
             addTelefone();
             delTelefone();
           });
-          /* $("#addMatricula").click(() => {
-            addMatricula();
-          });*/
-
-          preencherAutomatico();
         },
         fail: (response) => {},
       });

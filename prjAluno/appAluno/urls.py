@@ -3,7 +3,8 @@ from .views import (index, gravar, buscar, recarregarTabela, atualizar,
                     baixar_pdf, cancelarRM, buscarRM, 
                     carregar_classes, baixar_lista_telefonica,
                     buscar_dados_aluno, realizar_backup_v2, buscarRMCancelar, 
-                    del_telefone, retornar_classes, baixar_lista_alunos_personalizavel)
+                    del_telefone, retornar_classes, baixar_lista_alunos_personalizavel,
+                    baixar_declaracao)
 
 urlpatterns = [
     path("", index, name="inicial"),  
@@ -20,6 +21,7 @@ urlpatterns = [
     path("baixarpdf", baixar_pdf, name="baixarpdf"),
     path("listatelefonicapdf", baixar_lista_telefonica, name='listatelefonicapdf'),
     path("listapersonalizavelpdf", baixar_lista_alunos_personalizavel, name='listapersonalizavelpdf'),
+    path("baixardeclaracao", baixar_declaracao, name="baixardeclaracao"),
 
     
     path("bkp", realizar_backup_v2, name="realizarbackup"),

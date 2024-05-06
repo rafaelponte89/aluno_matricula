@@ -58,12 +58,15 @@ def retornar_ultima_matricula_ativa(aluno):
 def atualizarTabela(alunos):
     nomes_duplicados = buscar_duplicados(alunos)
     tabela = ''
+    
+
 
     for aluno in alunos:
         nome = aluno.nome.strip().upper()
         status_rm = f'<td class="align-middle">{aluno.rm}</td>'
         botao = ''
-        classes = 'btn btn-outline-dark btn-lg atualizar'
+        botao_declaracao = ''
+        classes = 'btn btn-outline-dark btn-lg'
         icon = '<i class="bi bi-arrow-repeat"></i>'
 
         if aluno.status == 1:
@@ -74,16 +77,24 @@ def atualizarTabela(alunos):
             status_rm = f'<td>{aluno.rm}'
             status_rm += f'<button "type="button" class="btn btn-outline-primary btn-sm m-1 advertencia" value="{aluno.rm}" data-bs-toggle="modal" data-bs-target="#resolucaoDuplicidadeModal"><i class="bi bi-person-fill-exclamation"></i></button></td>'
        
-        botao += f'<button type="button" class="{classes}" value="{aluno.rm}"\
+        botao += f'<button type="button" class="{classes} atualizar" value="{aluno.rm}"\
                  data-bs-toggle="modal" data-bs-target="#atualizarModal">\
                  {icon}\
                  </button>'
+        
+        botao_declaracao += f'<button type="button" class="{classes} declaracao" value="{aluno.rm}">\
+                 <i class="bi bi-journal"></i>\
+                 </button>'
+      
+            
         tabela += f"""<tr>{status_rm}
                         <td class="align-middle">{aluno.nome}</td> 
                         <td class="align-middle text-center">{retornar_ultima_matricula_ativa(aluno)}</td> 
                         <td class="align-middle text-center">{retornar_numeros_telefones(aluno)}</td> 
                         <td class="align-middle text-center">{aluno.ra}</td> 
                         <td class="align-middle text-center conteudoAtualizar">{botao}</td>
+                        <td class="align-middle text-center">{botao_declaracao}</td>
+
                     </tr>"""    
 
     return HttpResponse(tabela)
@@ -607,8 +618,6 @@ def baixar_lista_telefonica(request):
     return response
 
 
-
-
 ## Nova Personalizável
 def footer(canvas, doc, content):
     canvas.saveState()
@@ -621,6 +630,12 @@ def header_and_footer(canvas, doc, header_content, footer_content):
     header(canvas, doc, header_content,)
     footer(canvas, doc, footer_content)
 
+def header(canvas, doc, content):
+        canvas.saveState()
+        w, h = content.wrap(doc.width, doc.topMargin)
+        content.drawOn(canvas, doc.leftMargin, doc.height + doc.bottomMargin + doc.topMargin - h)
+        canvas.restoreState()
+        
 def baixar_lista_alunos_personalizavel(request):
     from reportlab.lib.pagesizes import A4
     from reportlab.platypus.paragraph import Paragraph
@@ -632,12 +647,7 @@ def baixar_lista_alunos_personalizavel(request):
     from reportlab.platypus.paragraph import Paragraph
     from functools import partial
 
-    def header(canvas, doc, content):
-        canvas.saveState()
-        w, h = content.wrap(doc.width, doc.topMargin)
-        content.drawOn(canvas, doc.leftMargin, doc.height + doc.bottomMargin + doc.topMargin - h)
-        canvas.restoreState()
-
+    
     classe = Classe.objects.get(pk=int(request.POST.get("classe")))
 
     titulo_lista = request.POST.get('titulo')
@@ -742,6 +752,117 @@ def baixar_lista_alunos_personalizavel(request):
     
     # conteudo
     pdf.build([t_aluno], onLaterPages=partial(header, content=header_content))
+
+    response = HttpResponse(content_type='application/pdf')
+    
+    response.write(buffer.getvalue())
+    buffer.close()
+    
+    return response
+
+# Em Desenvolvimento 05/05/2024
+def baixar_declaracao(request):
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus.paragraph import Paragraph
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import cm
+    from reportlab.platypus import SimpleDocTemplate, PageTemplate
+    from reportlab.platypus.frames import Frame
+    from reportlab.lib import pagesizes
+    from reportlab.platypus.paragraph import Paragraph
+    from functools import partial
+
+
+  
+    
+    tamanho_pagina = (A4[0], A4[1])  # retrato
+    
+    aluno = Aluno.objects.get(pk = request.POST.get('rm'))
+    matricula = Matricula.objects.filter(aluno=aluno).order_by('-ano').order_by('id').last()
+    #matricula = Matricula.objects.filter(aluno=aluno).filter(situacao='C').order_by('-ano').first()
+    nome_operador = request.POST.get('nome_op')
+    cargo_operador = request.POST.get('cargo_op')
+    rg_operador = request.POST.get('rg_op')
+
+    buffer = io.BytesIO()
+
+    titulo = "Declaração de Transferência" 
+    print(titulo)
+    primeira_linha = "o aluno " + matricula.aluno.nome + "ra" + matricula.aluno.ra 
+
+    data_alunos = []
+    data_alunos.append([titulo])
+    data_alunos.append(primeira_linha)
+    print(data_alunos)
+
+    style = ParagraphStyle(
+        name='Normal',
+        fontSize=10,
+        alignment=1
+    )
+    
+    corpo = ParagraphStyle(
+        name='Arial',
+        fontSize=14,
+        alignment=4,
+        firstLineIndent=40,
+        spaceBefore = 15
+        
+      
+    )
+    
+    titulo = ParagraphStyle(
+        name='Arial',
+        fontSize=18,
+        alignment=1,
+        spaceAfter=40
+    )
+    
+    quebras="<br/>"*15
+    p_quebras = Paragraph(f"""{quebras}""")
+
+    pdf = SimpleDocTemplate(buffer, pagesize=tamanho_pagina, 
+        leftMargin = 1.5 * cm, 
+        rightMargin = 1.5 * cm,
+        topMargin = 1.5 * cm, 
+        bottomMargin = 0.5 * cm)
+
+    frame = Frame(pdf.leftMargin, pdf.bottomMargin, pdf.width, pdf.height, id='normal')
+    
+    espacos = "&nbsp;"*52
+    header_content =(Paragraph(f"""
+                               <strong><font size="18">EMEB PROFª VICTÓRIA OLIVITO NONINO </font></strong> <br/>
+                                 Rua 14, 1303 A - Conjunto Habtacional José Luís Simões - Orlândia - SP - (16)3820-8230  <br/>
+                                 <img src="appAluno/static/appAluno/jpeg/logo_prefeitura.jpg" valign="middle" height="50" width="50" />{espacos}victorianonino@gmail.com {espacos}<img src="appAluno/static/appAluno/jpeg/logo_escola.jpg" valign="middle" height="50" width="50" />""", style=style ) )
+      
+    style_table = TableStyle(([('GRID',(0,1),(-1,-1), 0.5, colors.gray),   
+                            ('LEFTPADDING',(0,0),(-1,-1),6),
+                            ('TOPPADDING',(0,0),(-1,-1),0),
+                            ('BOTTOMPADDING',(0,0),(-1,-1),3),
+                            ('RIGHTPADDING',(0,0),(-1,-1),6),
+                            ('ALIGN',(0,0),(-1,-1),'LEFT'),
+                             ('ALIGN',(0,0),(0,-1),'CENTER'),
+                            ('FONTSIZE',(0,0), (-1,-1), 13),
+                            ('BOTTOMPADDING',(0,0),(0,0),20),
+                            ('FONTSIZE',(0,0),(0,0),18),
+                           
+                            ]))
+    
+    descritivo_situacao = Matricula.retornarDescricaoSituacao(matricula)
+    t_aluno = Table(data_alunos, style=style_table, hAlign='CENTER', 
+                    repeatRows=2)
+    quebras = "<br/>" * 10
+    p_titulo = Paragraph("""<strong><u>Declaração de Matrícula</u> </strong>""",style=titulo)
+    p1 = Paragraph(f"""Declaramos para os Devidos fins que o aluno(a) <strong>{aluno.nome} </strong>, RA: <strong>{aluno.ra} - {aluno.d_ra} </strong> está <strong>{descritivo_situacao}</strong> o <strong>{matricula.classe} </strong> no ano letivou de <strong>{matricula.ano}</strong>.""", style=corpo)
+    p2 = Paragraph(f"""Por ser expressão da verdade firmo o presente.""", style=corpo)
+    p_assinatura = Paragraph(f"""________________________________<br/> {nome_operador} <br/>{cargo_operador}<br/>RG: {rg_operador}""", style=style)
+    template = PageTemplate(id='test', frames=frame, onPage=partial(header, content=header_content))
+
+    pdf.addPageTemplates([template])
+  
+   
+    # conteudo
+    pdf.build([p_quebras,p_titulo,p1,p2,p_quebras,p_assinatura], onLaterPages=partial(header, content=header_content))
 
     response = HttpResponse(content_type='application/pdf')
     

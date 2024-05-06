@@ -93,19 +93,8 @@
           <div class="modal-body">
             <div id="configuracoes">
               <!-- Configuracoes -->
-              <div class="row">
-              <div class="col-12">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  value=""
-                  id="preenchimentoAutomatico"
-                />
-                <label for="preenchimentoAutomatico">
-                  Preenchimento automático por repetição
-                </label>
-                </div>
-              </div>
+             
+             <!--Versão-->
                <div class="row">
               <div class="col-12">
                 <input
@@ -119,6 +108,8 @@
                 </label>
                 </div>
               </div>
+
+              <!--Ano Configuração-->
                <div class="row mt-2">
               <div class="col-4">
               </div>
@@ -136,8 +127,12 @@
               </div>
             </div>
 
+            <!--Filtragem de Nomes-->
             <div class="row">
+                                         <h8 class="text-primary">Filtrar Alunos: </h8>
+
               <div class="col-12">
+
                 <input
                   class="form-check-input"
                   type="radio"
@@ -164,7 +159,38 @@
                   Ativos
                 </label>
                 </div>
-              </div>          
+              </div> 
+
+              
+               <div class="row d-flex">
+               <h8 class="text-primary">Dados do Operador: </h8>
+              <div class="col-12">
+                <input
+                  class="form-control"
+                  type="text"
+                  value=""
+                  placeholder="Nome do Operador"
+                  id="nomeOperador"
+                />
+
+                  <input
+                  class="form-control mt-2"
+                  type="text"
+                  value=""
+                  placeholder="Cargo do Operador"
+                  id="cargoOperador"
+                />
+
+                 <input
+                  class="form-control mt-2"
+                  type="text"
+                  value=""
+                  placeholder="RG do Operador"
+                  id="rgOperador"
+                />
+                
+                </div>
+              </div>         
             
           </div>
           <div class="modal-footer">

@@ -28,3 +28,9 @@ class Matricula(models.Model):
     
     def retornarSituacao():
         return Matricula.SITUACAO
+
+    def retornarDescricaoSituacao(self):
+        for i in range(len(self.SITUACAO)):
+            if self.situacao == self.SITUACAO[i][0]:
+                return self.SITUACAO[i][1]
+                
