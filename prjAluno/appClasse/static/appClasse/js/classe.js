@@ -1,4 +1,7 @@
 $(document).ready(() => {
+ 
+
+
   function exibirClasse(classe) {
     $.get({
       url: "exibirClasse",
@@ -40,7 +43,7 @@ $(document).ready(() => {
         $("#simAtualizar").off("click");
         $("#simDeletar").off("click");
         $("#gerarTurmas").off("click");
-      
+
         $("#dadosClasse").html(response);
         $("#simAtualizar").click(function () {
           sendAtualizar();
@@ -50,7 +53,7 @@ $(document).ready(() => {
         });
 
         $("#gerarTurmas").click(function () {
-            gerarTurmas();
+          gerarTurmas();
         });
       },
       fail: (response) => {},
@@ -69,7 +72,6 @@ $(document).ready(() => {
           $("#mensagem").css("display", "none");
         }, 3000);
 
-     
         sendListar();
       },
       fail: (response) => {
@@ -231,16 +233,12 @@ $(document).ready(() => {
       },
       success: (response) => {
         $("#quadroClasse").html(response);
-        
-        
       },
       fail: () => {},
     });
   }
 
-
   function gerarTurmas() {
-
     $.get({
       url: "gerarTurmas",
       data: {
@@ -249,33 +247,30 @@ $(document).ready(() => {
         m2: $("#m2").val(),
         m3: $("#m3").val(),
         m4: $("#m4").val(),
-        m5:$("#m5").val(),
-        m6:$("#m6").val(),
-        m7:$("#m7").val(),
-        m8:$("#m8").val(),
-        m9:$("#m9").val(),
-        t1:$("#t1").val(),
-        t2:$("#t2").val(),
-        t3:$("#t3").val(),
-        t4:$("#t4").val(),
-        t5:$("#t5").val(),
-        t6:$("#t6").val(),
-        t7:$("#t7").val(),
-        t8:$("#t8").val(),
-        t9:$("#t9").val(),
-        
+        m5: $("#m5").val(),
+        m6: $("#m6").val(),
+        m7: $("#m7").val(),
+        m8: $("#m8").val(),
+        m9: $("#m9").val(),
+        t1: $("#t1").val(),
+        t2: $("#t2").val(),
+        t3: $("#t3").val(),
+        t4: $("#t4").val(),
+        t5: $("#t5").val(),
+        t6: $("#t6").val(),
+        t7: $("#t7").val(),
+        t8: $("#t8").val(),
+        t9: $("#t9").val(),
       },
       success: (response) => {
-       alert(response);
+        alert(response);
         sendListar();
       },
     });
   }
 
-  $("#gerarTurmas").click(()=>{
+  $("#gerarTurmas").click(() => {
     gerarTurmas();
     sendListar();
-    
   });
-
 });

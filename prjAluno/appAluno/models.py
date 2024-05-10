@@ -7,7 +7,7 @@ class Aluno (models.Model):
     rm = models.IntegerField(primary_key=True,)
     nome = models.CharField(max_length=150)
     #status (0 - arquivado, 1 - cancelado, 2 - ativo) 
-    status = models.IntegerField(default=0) 
+    status = models.IntegerField() 
     ra = models.CharField(max_length=100, default='')
     d_ra = models.CharField(max_length=1, default='')
     data_nascimento = models.CharField(max_length=10, default='')

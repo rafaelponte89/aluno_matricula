@@ -471,9 +471,9 @@
         // datatype: 'pdf',
         data: {
           rm: rm,
-          nome_op: localStorage.getItem('nomeOperador'),
-          cargo_op: localStorage.getItem('cargoOperador'),
-          rg_op: localStorage.getItem('rgOperador')
+          nome_op: localStorage.getItem("nomeOperador"),
+          cargo_op: localStorage.getItem("cargoOperador"),
+          rg_op: localStorage.getItem("rgOperador"),
         },
         headers: {
           "X-CSRFToken": csrftoken,
@@ -498,7 +498,7 @@
         url: "{% url 'recarregarTabela' %}",
         success: (response) => {
           $("#corpoTabela").html(response);
-         
+
           $(".advertencia").off("click");
           $(".advertencia").click(function () {
             buscarAlunoCancelar($(this).val());
@@ -507,7 +507,7 @@
           $(".atualizar").click(function () {
             buscarAluno($(this).val());
           });
-        
+
           $(".declaracao").off("click");
           $(".declaracao").click(function () {
             sendBaixarDeclaracao($(this).val());
@@ -639,27 +639,7 @@
       });
     }
 
-    /* function addMatricula() {
-
-      let matriculaAdd = document.querySelector("#matriculas");
-      let novaMatricula =
-
-      matriculaAdd.insertAdjacentHTML("beforeend", novaMatricula);
-      let anos = document.getElementsByClassName("ano");
-      let classes = document.getElementsByClassName("classes");
-      let anos_tamanho = anos.length;
-      for(let i=0; i < anos_tamanho; i++) {
-        anos[i].addEventListener("focusout", function(){
-         sendClasses(anos[i].value, i);
-        })
-      }
-
-    }*/
-
     function delTelefone() {
-      let telefones = document.getElementsByClassName("telefone");
-      let removerTelefones = document.getElementsByClassName("removerTelefone");
-
       var close = document.getElementsByClassName("removerTelefone");
       var i;
       for (i = 0; i < close.length; i++) {
@@ -673,7 +653,7 @@
     }
 
     function addTelefone() {
-      let telefoneAdd = document.querySelector("#telefones");
+      let telefoneAdd = document.querySelector("#dados");
       let novoTelefone =
         ' <div class="col-12 form-group d-flex align-items-center"> \
                   <input        \
@@ -726,10 +706,28 @@
         },
         success: (response) => {
           $("#dadosAluno").html(response);
+          telefonesAlunos(rm);
+          
+
+          $(".nav-link").click(function (e) {
+            e.preventDefault();
+            $(".nav-link").removeClass("active");
+            $(this).addClass("active");
+
+          });
+
+          $("#aba1").click(function (e) {
+            e.preventDefault();
+            telefonesAlunos(rm); 
+          });
+
+          $("#aba2").click(() => {
+            exibirHistoricoMatriculas(rm);
+          });
           $("#simAtualizar").click(() => {
             sendAtualizar($("#simAtualizar").val());
           });
-          delTelefone();
+        
           //adicionar telefone quando clica no +
           $("#addTelefone").click(() => {
             addTelefone();
@@ -740,6 +738,46 @@
       });
     }
 
+    function telefonesAlunos(rm) {
+      $.post({
+        url: "{% url 'buscarTelefonesAluno' %}",
+
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        data: {
+          rm: rm,
+        },
+        success: (response) => {
+          $("#dados").html(response);
+          $("#addTelefone").click(() => {
+              addTelefone();
+              delTelefone();
+            });
+            delTelefone();
+
+        },
+        fail: (response) => {},
+      });
+    }
+
+    function exibirHistoricoMatriculas(rm) {
+      $.post({
+        url: "{% url 'buscarHistoricoMatriculas' %}",
+
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        data: {
+          rm: rm,
+        },
+        success: (response) => {
+          $("#dados").html(response);
+        },
+        fail: (response) => {},
+      });
+    }
+///////////////////////////////////////////////
     // Testando Cancelar RM
     function sendCancelar(rm) {
       $.post({

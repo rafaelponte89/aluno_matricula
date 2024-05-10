@@ -6,7 +6,7 @@ from .forms import frmAluno
 from django.http import HttpResponse
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
-from utilitarios.utilitarios import criarMensagem, padronizar_nome, realizar_backup_v2, anonimizarDado
+from utilitarios.utilitarios import criarMensagem, padronizar_nome, retornarNomeMes, anonimizarDado
 import io
 from os import path
 from reportlab.lib import colors
@@ -59,8 +59,6 @@ def atualizarTabela(alunos):
     nomes_duplicados = buscar_duplicados(alunos)
     tabela = ''
     
-
-
     for aluno in alunos:
         nome = aluno.nome.strip().upper()
         status_rm = f'<td class="align-middle">{aluno.rm}</td>'
@@ -98,7 +96,6 @@ def atualizarTabela(alunos):
                     </tr>"""    
 
     return HttpResponse(tabela)
-  
 
 def cancelarRM(request):
     rm_req = int(request.POST.get('rm'))
@@ -166,8 +163,96 @@ def retornar_telefones(aluno):
     for telefone in telefones_aluno:
         print(telefone.contato)
    
-   
-# versao 2 (em desenvolvimento)
+# em desenvolvimento 10/05/2024
+def buscar_historico_matriculas(request):
+    rm = request.POST.get('rm')
+    aluno = Aluno.objects.get(pk=rm)
+    matriculas_aluno = Matricula.objects.filter(aluno=aluno).order_by('-ano')
+    dados_matricula=''
+    
+    for matricula in matriculas_aluno:
+        descritivo_situacao = Matricula.retornarDescricaoSituacao(matricula)
+        dados_matricula += f"""
+                   <div class="col-12 form-group d-flex align-items-center"> 
+                  <input        
+                    type="text"     
+                    class="form-control m-2" 
+                   
+                    aria-describedby="emailHelp" 
+                    placeholder="Ano" 
+                    value="{matricula.ano}"
+                    disabled
+                  /> 
+                   <input        
+                    type="text"     
+                    class="form-control m-2" 
+                   
+                    aria-describedby="emailHelp" 
+                    placeholder="Ano" 
+                    value=" {descritivo_situacao}"
+                    disabled
+                  /> 
+                      
+                      <input        
+                    type="text"     
+                    class="form-control m-2" 
+                    
+                    aria-describedby="emailHelp" 
+                    placeholder="Ano" 
+                    value="{matricula.classe}"
+                    disabled
+                  /> 
+                </div>"""
+    
+    return HttpResponse(dados_matricula)
+
+def buscar_telefones_aluno(request):
+    rm = request.POST.get('rm')
+    aluno = Aluno.objects.get(pk=rm)
+    telefones = Telefone.retornarListaTelefones()
+    telefones_aluno = Telefone.objects.filter(aluno=aluno)
+    selecionado = "" 
+    adicionar_tel = """<div class="row">
+               <div class="col-1 form-group d-flex">
+                  <button id="addTelefone" type="button" class="btn btn-primary mt-3"><i class="bi bi-telephone-plus"></i></button>
+                </div>
+            </div>"""
+    
+    def retornar_telefone( telefones_aluno):  
+        selecionado_tel = ""     
+        opcoes_telefone = f"<option {selecionado}> Selecione </option>"
+        for i in range(len(telefones)):
+            sigla, contato = telefones[i]
+            if telefones_aluno.contato == sigla:
+                selecionado_tel = "selected"
+                opcoes_telefone += f"""<option value={sigla} {selecionado_tel}>{contato}</option>"""
+            else:
+                
+                opcoes_telefone += f"""<option value='{sigla}'>{contato}</option>"""
+        return opcoes_telefone   
+
+    dados_telefone = "" 
+    for i in range(len(telefones_aluno)):  
+        dados_telefone += f"""
+                   <div class="col-12 form-group d-flex align-items-center"> 
+                  <input        
+                    type="number"     
+                    class="form-control numTelefone p-2" 
+                    id="telefoneAtualizar" 
+                    aria-describedby="emailHelp" 
+                    placeholder="Telefone" 
+                    value="{telefones_aluno[i].numero}"
+                  /> 
+                      <select class="form-select m-3 contato" aria-label="Default select example" id=periodoAtualizar> 
+                        {retornar_telefone(telefones_aluno[i])}
+                    </select> 
+                   <button type="button" class="btn btn-danger m-1 removerTelefone" value="{telefones_aluno[i].id}"><i class="bi bi-telephone-minus"></i></button> 
+                </div>"""
+
+    dados_telefone = adicionar_tel + dados_telefone
+    return HttpResponse(dados_telefone)
+
+
 def buscar_dados_aluno(request):
     rm = request.POST.get('rm')
     print("RM", rm)
@@ -321,21 +406,21 @@ def buscar_dados_aluno(request):
               </div>
             </div>
             
+            <ul class="nav nav-tabs mt-4">
+                <li class="nav-item">
+                    <a id="aba1" class="nav-link active" aria-current="page" href="#">Telefones</a>
+                </li>
+                <li class="nav-item">
+                    <a id="aba2" class="nav-link" href="#">Matrículas</a>
+                </li>
+ 
+            </ul>
 
-            <div class="row mb-2" id="matriculas">
-                   {dados_matricula}
-            </div>
-            
-             <div class="row">
-               <div class="col-1 form-group d-flex">
-                  <button id="addTelefone" type="button" class="btn btn-primary mt-3"><i class="bi bi-telephone-plus"></i></button>
-                </div>
-            </div>
-            <div class="row mb-2" id="telefones">
-                   {dados_telefone}
+            <div id="dados" class="mb-2">
+
             </div>
              
-               <div class="modal-footer">
+        <div class="modal-footer">
         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
           Cancelar
         </button>
@@ -350,8 +435,7 @@ def buscar_dados_aluno(request):
             </button>
       </div>
           """ 
-    return HttpResponse(dados)
- 
+    return HttpResponse(dados) 
 
 def buscarRMCancelar(request):
     rm = request.POST.get('rm')
@@ -772,9 +856,6 @@ def baixar_declaracao(request):
     from reportlab.platypus.paragraph import Paragraph
     from functools import partial
 
-
-  
-    
     tamanho_pagina = (A4[0], A4[1])  # retrato
     
     aluno = Aluno.objects.get(pk = request.POST.get('rm'))
@@ -785,15 +866,6 @@ def baixar_declaracao(request):
     rg_operador = request.POST.get('rg_op')
 
     buffer = io.BytesIO()
-
-    titulo = "Declaração de Transferência" 
-    print(titulo)
-    primeira_linha = "o aluno " + matricula.aluno.nome + "ra" + matricula.aluno.ra 
-
-    data_alunos = []
-    data_alunos.append([titulo])
-    data_alunos.append(primeira_linha)
-    print(data_alunos)
 
     style = ParagraphStyle(
         name='Normal',
@@ -806,7 +878,8 @@ def baixar_declaracao(request):
         fontSize=14,
         alignment=4,
         firstLineIndent=40,
-        spaceBefore = 15
+        spaceBefore = 15,
+        leading=24
         
       
     )
@@ -815,6 +888,13 @@ def baixar_declaracao(request):
         name='Arial',
         fontSize=18,
         alignment=1,
+        spaceAfter=40
+    )
+
+    style_data = ParagraphStyle(
+        name='Arial',
+        fontSize=14,
+        alignment=2,
         spaceAfter=40
     )
     
@@ -835,34 +915,44 @@ def baixar_declaracao(request):
                                  Rua 14, 1303 A - Conjunto Habtacional José Luís Simões - Orlândia - SP - (16)3820-8230  <br/>
                                  <img src="appAluno/static/appAluno/jpeg/logo_prefeitura.jpg" valign="middle" height="50" width="50" />{espacos}victorianonino@gmail.com {espacos}<img src="appAluno/static/appAluno/jpeg/logo_escola.jpg" valign="middle" height="50" width="50" />""", style=style ) )
       
-    style_table = TableStyle(([('GRID',(0,1),(-1,-1), 0.5, colors.gray),   
-                            ('LEFTPADDING',(0,0),(-1,-1),6),
-                            ('TOPPADDING',(0,0),(-1,-1),0),
-                            ('BOTTOMPADDING',(0,0),(-1,-1),3),
-                            ('RIGHTPADDING',(0,0),(-1,-1),6),
-                            ('ALIGN',(0,0),(-1,-1),'LEFT'),
-                             ('ALIGN',(0,0),(0,-1),'CENTER'),
-                            ('FONTSIZE',(0,0), (-1,-1), 13),
-                            ('BOTTOMPADDING',(0,0),(0,0),20),
-                            ('FONTSIZE',(0,0),(0,0),18),
-                           
-                            ]))
+   
+    if matricula is not None:
+        descritivo_situacao = Matricula.retornarDescricaoSituacao(matricula)
+        dt_nascimento = (aluno.data_nascimento).split('-')
     
-    descritivo_situacao = Matricula.retornarDescricaoSituacao(matricula)
-    t_aluno = Table(data_alunos, style=style_table, hAlign='CENTER', 
-                    repeatRows=2)
-    quebras = "<br/>" * 10
-    p_titulo = Paragraph("""<strong><u>Declaração de Matrícula</u> </strong>""",style=titulo)
-    p1 = Paragraph(f"""Declaramos para os Devidos fins que o aluno(a) <strong>{aluno.nome} </strong>, RA: <strong>{aluno.ra} - {aluno.d_ra} </strong> está <strong>{descritivo_situacao}</strong> o <strong>{matricula.classe} </strong> no ano letivou de <strong>{matricula.ano}</strong>.""", style=corpo)
-    p2 = Paragraph(f"""Por ser expressão da verdade firmo o presente.""", style=corpo)
+        quebras = "<br/>" * 6
+        data = datetime.now()
+        data_emissao = Paragraph(f"""Orlândia, {data.day} de {retornarNomeMes(data.month)} de {data.year}.""",style=style_data)
+
+        if matricula.situacao == 'C':
+            p_titulo = Paragraph("""<strong><u>Declaração de Matrícula</u> </strong>""",style=titulo)
+            p1 = (Paragraph(f"""Declaro, para os devidos fins de direito, que o(a) aluno(a) <strong>{aluno.nome} </strong>, 
+                        portador(a) do RA Escolar: <strong>{aluno.ra} - {aluno.d_ra} SP </strong> está <strong>{descritivo_situacao}</strong> o 
+                        <strong>{matricula.classe} </strong> do Ensino Fundamental de 9 anos nesta unidade no ano letivo de <strong>{matricula.ano}</strong>.""", style=corpo))
+        elif matricula.situacao == 'BXTR':    
+            p_titulo = Paragraph("""<strong><u>Declaração de Transferência</u> </strong>""",style=titulo)
+            p1 =(Paragraph(f"""Declaro para os devidos fins de direito, que o(a) aluno(a): <strong>{aluno.nome}</strong> nascido(a) em <strong>{dt_nascimento[2]}/{dt_nascimento[1]}/{dt_nascimento[0]} </strong>
+                    portador(a) do RA Escolar: <strong>{aluno.ra} - {aluno.d_ra}</strong> do <strong>{matricula.classe} </strong> do Ensino Fundamental de 9 anos nesta unidade escolar,
+                    solicitou na presente data <strong>transferência </strong> para estabelecimento congênere, estando apto(a) ao prosseguimento de estudos no <strong>{matricula.classe.serie}º ano
+                    do Ensino Fundamental de 9 anos</strong>.""", style=corpo))
+        p2 = Paragraph(f"""Por ser expressão da verdade firmo a presente declaração.""", style=corpo)
+
+    else:
+        p_titulo = Paragraph("""""")
+        p1 = Paragraph("""Sem informações a exibir!!!""", style=titulo)
+        data_emissao = Paragraph("""""")
+        p2 = Paragraph("""""")
+
+
+    
+
     p_assinatura = Paragraph(f"""________________________________<br/> {nome_operador} <br/>{cargo_operador}<br/>RG: {rg_operador}""", style=style)
     template = PageTemplate(id='test', frames=frame, onPage=partial(header, content=header_content))
-
     pdf.addPageTemplates([template])
   
    
     # conteudo
-    pdf.build([p_quebras,p_titulo,p1,p2,p_quebras,p_assinatura], onLaterPages=partial(header, content=header_content))
+    pdf.build([p_quebras,data_emissao,p_titulo,p1,p2,p_quebras,p_assinatura], onLaterPages=partial(header, content=header_content))
 
     response = HttpResponse(content_type='application/pdf')
     

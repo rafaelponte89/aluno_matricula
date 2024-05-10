@@ -3,6 +3,7 @@ from django.shortcuts import HttpResponse
 from appClasse.models import Classe
 
 from appAluno.models import Aluno
+from appAluno.views import baixar_declaracao
 from .models import Matricula
 from django.db.models import Q
 from utilitarios.utilitarios import criarMensagem
@@ -57,6 +58,7 @@ def movimentar(request):
             aluno = Aluno.objects.get(pk=matricula.aluno.rm)
             aluno.status = 0
             aluno.save()
+
             return criarMensagem("Transferência efetuada!", "success")
         else:
              return criarMensagem("Movimentação efetuada!", "success")

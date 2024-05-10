@@ -2,9 +2,11 @@ from django.urls import path
 from .views import (index, gravar, buscar, recarregarTabela, atualizar,
                     baixar_pdf, cancelarRM, buscarRM, 
                     carregar_classes, baixar_lista_telefonica,
-                    buscar_dados_aluno, realizar_backup_v2, buscarRMCancelar, 
+                    buscar_dados_aluno, buscarRMCancelar, 
                     del_telefone, retornar_classes, baixar_lista_alunos_personalizavel,
-                    baixar_declaracao)
+                    baixar_declaracao, buscar_historico_matriculas, buscar_telefones_aluno)
+
+from utilitarios.utilitarios import realizar_backup_v2
 
 urlpatterns = [
     path("", index, name="inicial"),  
@@ -28,5 +30,9 @@ urlpatterns = [
     path("classes", retornar_classes, name="classes"),
     path("carregarClasses", carregar_classes, name="carregarclasses"),
     
-    path("delTelefone", del_telefone, name="delTelefone")
+    path("delTelefone", del_telefone, name="delTelefone"),
+    
+    # Em desenvolvimento 10052024
+    path("buscarHistoricoMatriculas",buscar_historico_matriculas, name="buscarHistoricoMatriculas"),
+    path("buscarTelefonesAluno", buscar_telefones_aluno, name="buscarTelefonesAluno")
 ]

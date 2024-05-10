@@ -7,7 +7,7 @@
 </div>
 
 <div id="classe" class="row mt-2 bg-body-secondary rounded-3">  
- 
+  {% csrf_token %}
   <div class="col-sm-2 p-3">
     <select
       type="text"
@@ -15,7 +15,7 @@
       placeholder="Classes"
       class="form-control formulario"
       aria-describedby="basic-addon1"
-    />
+    >
   
     </select>
   </div>
@@ -188,6 +188,10 @@
 
 $(document).ready(() => {
 
+  const csrftoken = document.querySelector(
+      "[name=csrfmiddlewaretoken]"
+    ).value;
+
     $("#selecaoClasse").hide();
    
 
@@ -327,12 +331,13 @@ $(document).ready(() => {
                  $("#mensagem").css("display", "none");
                 }, 3000);
                
+                
                 $("#selecaoClasse").hide();
                
                 carregarMovimentacao();
                 //carregarClasses($("#anoConfig").val());
                 carregarMatriculas($("#classes").val());
-              
+                sendBaixarDeclaracao($("#rmAluno").val());
             },
             fail: (response) => {}
         })
@@ -371,7 +376,6 @@ $(document).ready(() => {
                 $("#dadosMovimento").html(response);
                
                 $("#simMovimentar").click( function (){
-                   
                     sendMovimentar(matricula);
                   });
 
@@ -382,7 +386,7 @@ $(document).ready(() => {
     }
 
     carregarMovimentacao();
-    carregarClasses($("#anoConfig").val());
+    carregarClasses(localStorage.getItem('anoConfig'));
      
     $("#salvarConfig").click(() => 
     {
@@ -482,6 +486,35 @@ $("#uploadMatriculas").click(() => {
             fail: (response) => {},
         });
     }
+
+
+    function sendBaixarDeclaracao(rm) {
+      $.post({
+        url: "{% url 'baixardeclaracao' %}",
+        // datatype: 'pdf',
+        data: {
+          rm: rm,
+          nome_op: localStorage.getItem('nomeOperador'),
+          cargo_op: localStorage.getItem('cargoOperador'),
+          rg_op: localStorage.getItem('rgOperador')
+        },
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        success: (response) => {
+          var blob = new Blob([response], { type: "application/pdf" });
+
+          if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(blob); // for IE
+          } else {
+            var fileURL = URL.createObjectURL(blob);
+            var newWin = window.open(fileURL);
+            newWin.focus();
+          }
+        },
+      });
+    }
+
 });
 
 
