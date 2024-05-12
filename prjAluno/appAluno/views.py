@@ -132,21 +132,16 @@ def buscar(request):
         return recarregarTabela(request)
 
 
-def retornar_classes(request):
+def carregar_classes(request):
     ano = request.GET.get('ano')
     classes = Classe.objects.filter(ano=ano)
-    opcoes = ""
-    for i in classes:
-        if i.periodo == "M":
-            periodo = "MANHÃ"
-        else:
-            periodo = "TARDE"
-        opcoes += f"<option value={i.id}>{i.serie}º{i.turma} {periodo}</option>"
-    opcoes = f"<select class='form-select m-3 classes' aria-label='Default select example'> \
-                    {opcoes}\
-                  </select>"
-    return HttpResponse(opcoes)
-    
+    opcoes = "<option value='0'>Selecione</option>"
+                                            
+    for c in classes:
+        periodo = Classe.retornarDescricaoPeriodo(c)
+        opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
+        
+    return HttpResponse(opcoes)  
 
 def retornar_numeros_telefones(aluno):
     telefones = (Telefone.objects.filter(aluno=aluno)
@@ -221,8 +216,8 @@ def buscar_telefones_aluno(request):
     def retornar_telefone( telefones_aluno):  
         selecionado_tel = ""     
         opcoes_telefone = f"<option {selecionado}> Selecione </option>"
-        for i in range(len(telefones)):
-            sigla, contato = telefones[i]
+        for tel in telefones:
+            sigla, contato = tel
             if telefones_aluno.contato == sigla:
                 selecionado_tel = "selected"
                 opcoes_telefone += f"""<option value={sigla} {selecionado_tel}>{contato}</option>"""
@@ -243,7 +238,7 @@ def buscar_telefones_aluno(request):
                     placeholder="Telefone" 
                     value="{telefones_aluno[i].numero}"
                   /> 
-                      <select class="form-select m-3 contato" aria-label="Default select example" id=periodoAtualizar> 
+                      <select class="form-select m-3 contato" aria-label="Default select example" class="linhaTelefone"> 
                         {retornar_telefone(telefones_aluno[i])}
                     </select> 
                    <button type="button" class="btn btn-danger m-1 removerTelefone" value="{telefones_aluno[i].id}"><i class="bi bi-telephone-minus"></i></button> 
@@ -252,30 +247,38 @@ def buscar_telefones_aluno(request):
     dados_telefone = adicionar_tel + dados_telefone
     return HttpResponse(dados_telefone)
 
-
+def descrever_contato(request):
+    contatos = Telefone.retornarListaTelefones()
+    opcao = "<option value='0'>Selecione </option>"
+    for i in contatos:
+        sigla, contato = i
+        opcao += f"""<option value='{sigla}'>{contato}</option>"""
+        
+    novoTelefone  = f"""<div class="col-12 form-group d-flex align-items-center"> 
+                  <input        
+                    type="number"     
+                    class="form-control numTelefone p-2" 
+                    id="telefoneAtualizar" 
+                    aria-describedby="emailHelp" 
+                    placeholder="Telefone" 
+                  /> 
+                  <select class="form-select m-3 contato" aria-label="Default select example">
+                    {opcao}
+                    </select>
+                   <button type="button" class="btn btn-danger m-1 removerTelefone" value="0"><i class="bi bi-telephone-minus"></i></button>\
+                </div>"""
+                
+    return HttpResponse(novoTelefone)
+        
+        
 def buscar_dados_aluno(request):
+
     rm = request.POST.get('rm')
-    print("RM", rm)
     aluno = Aluno.objects.get(pk=rm)
 
-    telefones = Telefone.retornarListaTelefones()
     matriculas = Matricula.retornarSituacao()
-    telefones_aluno = Telefone.objects.filter(aluno=aluno)
-    matriculas_aluno = Matricula.objects.filter(aluno=aluno).order_by('-ano')
-    selecionado = ""    
+    matriculas_aluno = Matricula.objects.filter(aluno=aluno).order_by('-ano')   
     
-    def retornar_telefone( telefones_aluno):  
-        selecionado_tel = ""     
-        opcoes_telefone = f"<option {selecionado}> Selecione </option>"
-        for i in range(len(telefones)):
-            sigla, contato = telefones[i]
-            if telefones_aluno.contato == sigla:
-                selecionado_tel = "selected"
-                opcoes_telefone += f"""<option value={sigla} {selecionado_tel}>{contato}</option>"""
-            else:
-                
-                opcoes_telefone += f"""<option value='{sigla}'>{contato}</option>"""
-        return opcoes_telefone
     
     def retornar_matricula(matriculas_aluno):  
         situacao = ''
@@ -285,24 +288,6 @@ def buscar_dados_aluno(request):
                 situacao = situacao
                 break
         return situacao
-    
-    dados_telefone = "" 
-    for i in range(len(telefones_aluno)):  
-        dados_telefone += f"""
-                   <div class="col-12 form-group d-flex align-items-center"> 
-                  <input        
-                    type="number"     
-                    class="form-control numTelefone p-2" 
-                    id="telefoneAtualizar" 
-                    aria-describedby="emailHelp" 
-                    placeholder="Telefone" 
-                    value="{telefones_aluno[i].numero}"
-                  /> 
-                      <select class="form-select m-3 contato" aria-label="Default select example" id=periodoAtualizar> 
-                        {retornar_telefone(telefones_aluno[i])}
-                    </select> 
-                   <button type="button" class="btn btn-danger m-1 removerTelefone" value="{telefones_aluno[i].id}"><i class="bi bi-telephone-minus"></i></button> 
-                </div>"""
                 
     dados_matricula = ""
     for i in range(len(matriculas_aluno)):  
@@ -571,19 +556,6 @@ def index(request):
     context = {'form': frmAluno()}
     return render(request, 'index.html', context)
 
-def carregar_classes(request):
-    ano = request.GET.get('ano')
-    classes = Classe.objects.filter(ano=ano)
-    opcoes = "<option value='0'>Selecione</option>"
-                                            
-    for c in classes:
-        if c.periodo == "M":
-            periodo = "MANHÃ"
-        else:
-            periodo = "TARDE"
-        opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
-        
-    return HttpResponse(opcoes)
 
 
 def baixar_pdf(request):
@@ -832,8 +804,6 @@ def baixar_lista_alunos_personalizavel(request):
 
     pdf.addPageTemplates([template])
 
-
-    
     # conteudo
     pdf.build([t_aluno], onLaterPages=partial(header, content=header_content))
 

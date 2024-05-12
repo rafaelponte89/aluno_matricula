@@ -115,10 +115,7 @@ def carregarAnoAtual(ano):
     corpo = ''
     
     for c in classe:
-        if c.periodo == "M":
-            periodo = "MANHÃ"
-        else:
-            periodo = "TARDE"
+        periodo = Classe.retornarDescricaoPeriodo(c)
         
         corpo += f"""<tr><td class='text-center'>{c.serie}</td><td class='text-center'>{c.turma}</td><td class='text-center'>{periodo}</td> <td class='text-center'>  <button type="button" class="btn btn-outline-dark btn-lg atualizar"
           value={c.id} data-bs-toggle="modal" data-bs-target="#atualizarModal"> 
@@ -199,12 +196,8 @@ def exibirClasses(request):
     classe = Classe.objects.get(pk=codigo_classe)
     matriculas = Matricula.objects.filter(Q(classe=classe)).order_by('numero')
     linhas = ''
-    
-    if classe.periodo == "M":
-        periodo = "MANHÃ"
-    else:
-        periodo = "TARDE"
-    
+    periodo = Classe.retornarDescricaoPeriodo(classe)
+        
     for m in matriculas:
         linhas += f"""<tr><td>{m.numero}</td>  <td>{m.aluno.nome}</td></tr>"""
 
@@ -231,10 +224,7 @@ def exibirTelaMatricula(request):
     codigo_classe = request.GET.get("classe")
     classe = Classe.objects.get(pk=codigo_classe)
     
-    if classe.periodo == "M":
-        periodo = "MANHÃ"
-    else:
-        periodo = "TARDE"
+    periodo = Classe.retornarDescricaoPeriodo(classe)
             
     tela = f"""<form>
                     <h5 class='bg-body-secondary d-flex rounded-5 justify-content-center p-2'><strong>{classe.serie}º{classe.turma} - {periodo} </strong></h5>

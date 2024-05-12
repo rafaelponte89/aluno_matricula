@@ -17,10 +17,7 @@ class Classe(models.Model):
     periodo = models.CharField(max_length=1, choices=PERIODO_CHOICES, blank=False, null=False)
     
     def __str__(self):
-        if self.periodo == "M":
-            periodo = "MANHÃ"
-        else:
-            periodo = "TARDE"
+        periodo = self.retornarDescricaoPeriodo()
         return f'{self.serie}º {self.turma} {periodo}'
     
     def retornarPeriodos():
@@ -31,4 +28,9 @@ class Classe(models.Model):
         elementos = tipo_objeto.objects.filter(classe=campo_pesquisa)
         numero = len(elementos) + 1
         return numero
+    
+    def retornarDescricaoPeriodo(self):
+        for i in range(len(self.PERIODO_CHOICES)):
+            if self.periodo == self.PERIODO_CHOICES[i][0]:
+                return self.PERIODO_CHOICES[i][1]
     

@@ -69,27 +69,13 @@ def movimentar(request):
         return criarMensagem(f"Erro ao efetuar o Remanejamento!{erro}",
                              "danger")
         
-        
-def transferir(request):
-    try:
-        matricula = Matricula.objects.get(pk=request.GET.get('matricula'))
-        matricula.ano = request.GET.get('ano')
-        matricula.situacao = 'BXTR'
-        matricula.data_movimentacao = request.GET.get('data_movimentacao')
-        matricula.save()
-        return criarMensagem("Transferência efetuada!", "success")
-    
-    except Exception as erro:
-        return criarMensagem(f"Erro ao efetuar a Transferência!{erro}",
-                             "danger")
-
 
 def ordernar_alfabetica(request):
     classe = request.GET.getlist('classe')[0]
     linhas = carregar_linhas(classe, 'aluno__nome')
     return HttpResponse(linhas)
 
-####
+
 def carregar_movimentacao(request):
    
     movimentacoes = Matricula.retornarSituacao()
@@ -99,19 +85,15 @@ def carregar_movimentacao(request):
      
         if m[0] == "BXTR":
             situacao = "TRANSFERIDO"
-            cor = "text-danger"
         elif m[0] == "REMA":
             situacao = "REMANEJADO"
-            cor = "text-success"
         elif m[0] == "NCFP":
-            cor = "text-danger"
             situacao = "Ñ COMP. FORA PRAZO"
             
         if m[0] not in ['C','P','R']:
             opcoes += f"<option value={m[0]}>{situacao} </option>"
         
     return HttpResponse(opcoes)
-#####
 
 
 def carregar_classes_remanejamento(request):
@@ -130,6 +112,7 @@ def carregar_classes_remanejamento(request):
         opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
         
     return HttpResponse(opcoes)
+
 
 def carregar_classes(request):
     ano = request.GET.get('ano')
@@ -159,14 +142,13 @@ def carregar_linhas(classe, ordem="numero"):
             m.save()
     cor = "text-dark"        
     for m in matriculas:
+        situacao = Matricula.retornarDescricaoSituacao(m)
+
         if m.situacao == "C":
-            situacao = "CURSANDO"
             cor = "text-primary"
         elif m.situacao == "BXTR" or m.situacao == "TRAN":
-            situacao = "TRANSFERIDO"
             cor = "text-danger"
         elif m.situacao == "REMA":
-            situacao = "REMANEJADO"
             cor = "text-success"
         elif m.situacao == "P":
             situacao = "PROMOVIDO"
@@ -176,7 +158,7 @@ def carregar_linhas(classe, ordem="numero"):
             cor = "text-danger"
             situacao = "Ñ COMP. FORA PRAZO"
         else:
-            situacao = "ARQUIVADO"
+            situacao = "INDEFINIDA"
         if m.data_movimentacao is None:
             m.data_movimentacao = ''
         linhas += f"""<tr> <td class='text-center'><button class='rounded-circle bg-light text-dark border-success'>{m.numero} </button></td> <td >{m.aluno.nome}</td> <td class={cor}> {situacao} </td> 
@@ -203,7 +185,8 @@ def excluir_matricula(request):
             return criarMensagem("Matrícula excluída com sucesso!", "success")
     
     
-    
+
+## Não implementado ainda
 def buscar_matricula(request):
     matricula = request.GET.get('matricula')
     matricula = Matricula.objects.get(pk=matricula)

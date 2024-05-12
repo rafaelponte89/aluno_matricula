@@ -605,7 +605,7 @@
       });
     }
 
-    //Testando buscar aluno por rm para cancelar
+    //Buscar Aluno por rm para cancelar
     function buscarAlunoCancelar(rm) {
       $.post({
         url: "{% url 'buscarRMCancelar' %}",
@@ -623,29 +623,12 @@
       });
     }
 
-    function sendClasses(ano) {
-      $.get({
-        url: "{% url 'classes' %}",
-        data: {
-          ano: ano,
-        },
-        success: (response) => {
-          let classes = document.getElementsByClassName("matricula");
-          for (let i = 0; i < classes.length; i++) {
-            classes[i].innerHTML = response;
-          }
-        },
-        fail: (response) => {},
-      });
-    }
-
     function delTelefone() {
       var close = document.getElementsByClassName("removerTelefone");
       var i;
       for (i = 0; i < close.length; i++) {
         close[i].onclick = function () {
           var div = this.parentElement;
-          //div.style.display = "none";
           sendDelTelefone(this.value);
           div.remove();
         };
@@ -653,29 +636,14 @@
     }
 
     function addTelefone() {
-      let telefoneAdd = document.querySelector("#dados");
-      let novoTelefone =
-        ' <div class="col-12 form-group d-flex align-items-center"> \
-                  <input        \
-                    type="number"     \
-                    class="form-control numTelefone p-2" \
-                    id="telefoneAtualizar" \
-                    aria-describedby="emailHelp" \
-                    placeholder="Telefone" \
-                  /> \
-                  <select class="form-select m-3 contato" aria-label="Default select example" id="periodoAtualizar"> \
-                  <option> Selecione </option>\
-                    <option value="M">MÃE</option> \
-                  <option value="P">PAI</option>\
-                  <option value="T">TIA/TIO</option>\
-                  <option value="I">IRMÃ/IRMÃO</option>\
-                  <option value="A">AVÓ/AVÔ</option>\
-                  <option value="R">RESPONSÁVEL</option>\
-                  <option value="O">OUTRO</option>\
-                    </select>\
-                   <button type="button" class="btn btn-danger m-1 removerTelefone" value="0"><i class="bi bi-telephone-minus"></i></button>\
-                </div>';
-      telefoneAdd.insertAdjacentHTML("beforeend", novoTelefone);
+      $.get({
+        url: "{% url 'contato' %}",
+        success: (response) => {
+          $("#dados").append(response)
+
+        },
+        fail: () => {},
+      });
     }
 
     function sendDelTelefone(idTel) {
@@ -693,7 +661,7 @@
       });
     }
 
-    //Testando buscar aluno por rm
+    //Buscar aluno por rm
     function buscarAluno(rm) {
       $.post({
         url: "{% url 'buscarDadosAluno' %}",
@@ -707,18 +675,16 @@
         success: (response) => {
           $("#dadosAluno").html(response);
           telefonesAlunos(rm);
-          
 
           $(".nav-link").click(function (e) {
             e.preventDefault();
             $(".nav-link").removeClass("active");
             $(this).addClass("active");
-
           });
 
           $("#aba1").click(function (e) {
             e.preventDefault();
-            telefonesAlunos(rm); 
+            telefonesAlunos(rm);
           });
 
           $("#aba2").click(() => {
@@ -727,7 +693,7 @@
           $("#simAtualizar").click(() => {
             sendAtualizar($("#simAtualizar").val());
           });
-        
+
           //adicionar telefone quando clica no +
           $("#addTelefone").click(() => {
             addTelefone();
@@ -751,11 +717,10 @@
         success: (response) => {
           $("#dados").html(response);
           $("#addTelefone").click(() => {
-              addTelefone();
-              delTelefone();
-            });
+            addTelefone();
             delTelefone();
-
+          });
+          delTelefone();
         },
         fail: (response) => {},
       });
@@ -777,8 +742,8 @@
         fail: (response) => {},
       });
     }
-///////////////////////////////////////////////
-    // Testando Cancelar RM
+
+    //Cancelar RM
     function sendCancelar(rm) {
       $.post({
         url: "{% url 'cancelarRM' %}",
@@ -856,8 +821,6 @@
       }
     });
     $("#bkp").click(() => sendBkp());
-
-    // $("#id_nome").focus().keydown();
 
     function carregarClasses(ano) {
       $.get({

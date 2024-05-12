@@ -46,6 +46,11 @@ class Telefone(models.Model):
     def retornarListaTelefones():
         return Telefone.TEL_CHOICES
     
+    def retornarDescricaoContato(self):
+        for i in range(len(self.TEL_CHOICES)):
+            if self.contato == self.TEL_CHOICES[i][0]:
+                return self.TEL_CHOICES[i][1]
+    
 #Documentos do aluno (NÃO IMPLEMENTADO)
 class Prontuario(models.Model):
     DOCUMENTO_CHOICES = (

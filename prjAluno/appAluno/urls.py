@@ -3,8 +3,8 @@ from .views import (index, gravar, buscar, recarregarTabela, atualizar,
                     baixar_pdf, cancelarRM, buscarRM, 
                     carregar_classes, baixar_lista_telefonica,
                     buscar_dados_aluno, buscarRMCancelar, 
-                    del_telefone, retornar_classes, baixar_lista_alunos_personalizavel,
-                    baixar_declaracao, buscar_historico_matriculas, buscar_telefones_aluno)
+                    del_telefone, baixar_lista_alunos_personalizavel,
+                    baixar_declaracao, buscar_historico_matriculas, buscar_telefones_aluno, descrever_contato)
 
 from utilitarios.utilitarios import realizar_backup_v2
 
@@ -27,10 +27,10 @@ urlpatterns = [
 
     
     path("bkp", realizar_backup_v2, name="realizarbackup"),
-    path("classes", retornar_classes, name="classes"),
     path("carregarClasses", carregar_classes, name="carregarclasses"),
     
     path("delTelefone", del_telefone, name="delTelefone"),
+    path("contato", descrever_contato, name="contato"),
     
     # Em desenvolvimento 10052024
     path("buscarHistoricoMatriculas",buscar_historico_matriculas, name="buscarHistoricoMatriculas"),

@@ -67,24 +67,19 @@
       <div id="menu" class="row">
         <ul class="nav">
           <li class="m-2">
-            <a class="" href="{% url 'inicial' %}" id="aluno"
-              >Alunos</a
-            >
+            <a class="" href="{% url 'inicial' %}" id="aluno">Alunos</a>
           </li>
           <li class="m-2">
             <a class="" href="{% url 'classe' %}" id="classe">Classes </a>
           </li>
           <li class="m-2">
-            <a class="" href="{% url 'matricula' %}" id="matricula"> Matriculas </a>
+            <a class="" href="{% url 'matricula' %}" id="matricula">
+              Matriculas
+            </a>
           </li>
         </ul>
       </div>
-      <div class="row">
-        
-
-        {% block content %} {% endblock content%}
-      
-      </div>
+      <div class="row">{% block content %} {% endblock content%}</div>
 
       <!-- Modal Configurações -->
       <div
@@ -226,9 +221,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
     -->
       <script type="text/javascript">
-        $(document).ready(() => {
-       
-        });
+        $(document).ready(() => {});
       </script>
     </div>
   </body>
