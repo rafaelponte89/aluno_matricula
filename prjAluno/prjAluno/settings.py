@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'appAluno',
     'appClasse',
-    'appMatricula'
+    'appMatricula',
+    'dashboard'
 
 ]
 

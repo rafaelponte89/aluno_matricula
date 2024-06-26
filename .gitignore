@@ -9,3 +9,4 @@ log_backup.txt
 *.csv
 automatization.py
 chromedriver.exe
+/v_aluno
