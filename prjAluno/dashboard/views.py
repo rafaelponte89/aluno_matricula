@@ -47,7 +47,7 @@ def visualizar_alunos_mes(request):
     for k,v in dados.items():
         mes += 1
         dados[k] =  (Matricula.objects.filter(situacao='C').filter(ano=ano).filter(data_matricula__month__lte=mes).count()
-        -Matricula.objects.exclude(situacao='C').filter(ano=ano).filter(data_movimentacao__month=mes).count())
+        +Matricula.objects.filter(situacao='BXTR').filter(ano=ano).filter(data_movimentacao__month=mes).count())
     return JsonResponse(dados, safe=False)
     
 
