@@ -22,9 +22,9 @@ def visualizar_alunos_periodo(request):
     print(manha, tarde)
     print('executon')
     dados = {
-        'manha': manha,
-        'tarde': tarde,
-        'integral': integral
+        'Manhã': manha,
+        'Tarde': tarde,
+        'Integral': integral
 
     }
 

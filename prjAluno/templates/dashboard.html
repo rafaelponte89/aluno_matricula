@@ -2,9 +2,9 @@
 
 <div class="row">
     <div class="col-12">
-      <h1 class="text-center">Dashboard</h1>
+        <h1 class="text-center">Dashboard</h1>
     </div>
-  </div>
+</div>
 
 <div class="row">
     <div class="col-4">
@@ -22,7 +22,6 @@
 <script>
     $(document).ready(() => {
 
-        // Retorna gráfico de pizza em relação ao período
         function visPeriodo() {
             $.get({
                 url: "{% url 'visperiodo' %}",
@@ -30,8 +29,7 @@
                     ano: localStorage.getItem('anoConfig'),
                 },
                 success: (response) => {
-                    gerarGraficoPeriodo(response);
-
+                    gerarGrafico(response, 'pie', '', 'visperiodo');
 
                 },
                 fail: (response) => { },
@@ -45,65 +43,32 @@
                     ano: localStorage.getItem('anoConfig'),
                 },
                 success: (response) => {
-                    console.log(response);
-                    gerarGraficoQtdAlunos(response);
-
+                  
+                    gerarGrafico(response, 'bar', 'Alunos Cursando', 'visqtdalunos');
 
                 },
                 fail: (response) => { },
             });
         }
 
-        function gerarGraficoQtdAlunos(response) {
-            const ctx = document.getElementById('visqtdalunos');
-
+        // Retorna gráfico conforme configuração
+        function gerarGrafico(response, tipo, titulo, identificador) {
+            const ctx = document.getElementById(identificador);     
             new Chart(ctx, {
-                type: 'line',
+                type: tipo,
                 data: {
-                    labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+                    labels: Object.keys(response),
                     datasets: [{
-                        label: 'Alunos Cursando: ',
-                        data: [response['Janeiro'], response['Fevereiro'], response['Março'],
-                        response['Abril'], response['Maio'], response['Junho'],
-                        response['Julho'], response['Agosto'], response['Setembro'],
-                        response['Outubro'], response['Novembro'], response['Dezembro'],],
-                        borderWidth: 1,
-                        fill: false,
-                        borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-
-
-
-
-                }
-            });
-        }
-
-
-
-        function gerarGraficoPeriodo(response) {
-            const ctx = document.getElementById('visperiodo');
-
-            new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Manhã', 'Tarde','Integral'],
-                    datasets: [{
-                        label: 'Quantidade: ',
-                        data: [response['manha'], response['tarde'], response['integral']],
+                        label: titulo,
+                        data: Object.values(response),
                         borderWidth: 1
                     }]
                 },
                 options: {
 
-
-
-
                 }
             });
+
         }
 
         visPeriodo();
