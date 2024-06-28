@@ -261,6 +261,18 @@ $(document).ready(() => {
         t7: $("#t7").val(),
         t8: $("#t8").val(),
         t9: $("#t9").val(),
+        i1: $("#i1").val(),
+        i2: $("#i2").val(),
+        i3: $("#i3").val(),
+        i4: $("#i4").val(),
+        i5: $("#i5").val(),
+        i6: $("#i6").val(),
+        i7: $("#i7").val(),
+        i8: $("#i8").val(),
+        i9: $("#i9").val(),
+
+       
+
       },
       success: (response) => {
         alert(response);

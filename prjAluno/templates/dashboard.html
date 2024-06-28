@@ -90,10 +90,10 @@
             new Chart(ctx, {
                 type: 'pie',
                 data: {
-                    labels: ['Manhã', 'Tarde'],
+                    labels: ['Manhã', 'Tarde','Integral'],
                     datasets: [{
                         label: 'Quantidade: ',
-                        data: [response['manha'], response['tarde'],],
+                        data: [response['manha'], response['tarde'], response['integral']],
                         borderWidth: 1
                     }]
                 },

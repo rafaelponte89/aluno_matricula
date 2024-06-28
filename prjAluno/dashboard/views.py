@@ -17,11 +17,15 @@ def visualizar_alunos_periodo(request):
 
     manha =  Matricula.objects.filter(classe__periodo='M').filter(situacao='C').filter(ano=ano).count()
     tarde =  Matricula.objects.filter(classe__periodo='T').filter(situacao='C').filter(ano=ano).count()
+    integral =  Matricula.objects.filter(classe__periodo='I').filter(situacao='C').filter(ano=ano).count()
+
     print(manha, tarde)
     print('executon')
     dados = {
         'manha': manha,
-        'tarde': tarde
+        'tarde': tarde,
+        'integral': integral
+
     }
 
     return JsonResponse(dados, safe=False)

@@ -10,6 +10,7 @@ class Classe(models.Model):
     PERIODO_CHOICES = (
         ("M","MANHÃ"),
         ("T","TARDE"),
+        ("I","INTEGRAL")
     )
     serie = models.CharField(max_length=1, blank=False, null=False )
     turma = models.CharField(max_length=1, blank=False, null=False)

@@ -255,6 +255,19 @@ def contar(serie,ano,periodo):
     return len(classes)
 
 
+# Gera a turma
+def gerarTurma(serie, ano, series, periodo, turma):
+    for i in range(serie):
+        classe = Classe()
+        classe.ano = ano
+        classe.serie = series
+        classe.turma = chr(turma)
+        classe.periodo = periodo
+        classe.save()
+        turma += 1
+    return turma
+
+# Gera as turmas
 def gerarTurmas(request):
     ano = request.GET.get('ano')
     turma = 65
@@ -262,27 +275,17 @@ def gerarTurmas(request):
     for s in range(1, 10):
         serie_manha = int(request.GET.get('m'+str(s)))
         serie_tarde = int(request.GET.get('t'+str(s)))
-        print(serie_manha)
-        print(serie_tarde)
+        serie_integral = int(request.GET.get('i'+str(s)))
+
         if (serie_manha) > 0:
-           
-            for i in range(serie_manha):
-                classe = Classe()
-                classe.ano = ano
-                classe.serie = s
-                classe.turma = chr(turma)
-                classe.periodo = "M"
-                classe.save()
-                turma += 1
+            turma = gerarTurma(serie_manha, ano, s,"M",turma )
+
         if (serie_tarde) > 0: 
-            for i in range(serie_tarde):
-                classe = Classe()
-                classe.ano = ano
-                classe.serie = s
-                classe.turma = chr(turma)
-                classe.periodo = "T"
-                classe.save()
-                turma += 1
+            turma = gerarTurma(serie_tarde, ano, s,"T",turma )
+
+        if (serie_integral) > 0:
+            turma = gerarTurma(serie_integral, ano, s,"I",turma )
+
         turma = 65
                 
     return HttpResponse("Geradas as salas") 
@@ -299,9 +302,11 @@ def exibirQuadro(request):
         desabilita =''
         
     tela = """ <div class="row">
-            <div class="col-4 text-center"><strong>Ano</strong></div>
-            <div class="col-4 text-center"><strong>Manhã</strong></div>
-            <div class="col-4 text-center"><strong>Tarde</strong></div>
+            <div class="col-3 text-center"><strong>Ano</strong></div>
+            <div class="col-3 text-center"><strong>Manhã</strong></div>
+            <div class="col-3 text-center"><strong>Tarde</strong></div>
+            <div class="col-3 text-center"><strong>Integral</strong></div>
+
           </div>
             """
             
@@ -310,12 +315,15 @@ def exibirQuadro(request):
         tela += f"""<div
             class="row mt-2 d-flex justify-content-center align-items-center"
           >
-            <div class="col-4 text-center  bg-body-secondary p-1 rounded-4"><strong>{i}<span>º</span></strong></div>
-            <div class="col-4 text-center">
+            <div class="col-3 text-center  bg-body-secondary p-1 rounded-4"><strong>{i}<span>º</span></strong></div>
+            <div class="col-3 text-center">
               <input type="number" class="form-control" value="{contar(i,ano,'M')}" id="m{i}" {desabilita} />
             </div>
-            <div class="col-4 text-center">
+            <div class="col-3 text-center">
               <input type="number" class="form-control" value="{contar(i,ano,'T')}" id="t{i}" {desabilita} />
+            </div>
+            <div class="col-3 text-center">
+              <input type="number" class="form-control" value="{contar(i,ano,'I')}" id="i{i}" {desabilita} />
             </div>
           </div>"""
           
