@@ -31,6 +31,7 @@ def retornarNomeMes(chave):
     if chave in meses:
         return meses[chave]
     
+
 def criarMensagemModal(texto, tipo):
     mensagem = HttpResponse(f"<div style='display:block;' id='mensagemModal' class='alert alert-{tipo}' role='alert' >{texto} </div>")
     return  mensagem
@@ -147,8 +148,15 @@ def migrar_dados_aluno():
             arquivo.write(nome + '\n')    
         arquivo.write("Nao Migrados: " +  str(nao_migrados_count))
     
+def converter_data_formato_br_str(data):
+    if data is not '':
+        data = data.strftime('%d/%m/%Y')
+        return data
+    else:
+        return ''
+
 # Converte data do formato dd/mm/aaaa para aaaa-mm-dd
-def converter_data():
+def converter_data(data):
     alunos = Aluno.objects.all()
     
     try:    

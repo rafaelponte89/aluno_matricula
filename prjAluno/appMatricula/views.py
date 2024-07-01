@@ -1,12 +1,10 @@
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
 from appClasse.models import Classe
-
 from appAluno.models import Aluno
-from appAluno.views import baixar_declaracao
 from .models import Matricula
 from django.db.models import Q
-from utilitarios.utilitarios import criarMensagem
+from utilitarios.utilitarios import criarMensagem, converter_data_formato_br_str
 from datetime import datetime
 # Create your views here.
 
@@ -38,30 +36,38 @@ def movimentar(request):
     try:
        
         matricula = Matricula.objects.get(pk=request.GET.get('matricula'))
-        movimentacao = request.GET.getlist('movimentacao')[0]
-        data_movimentacao = request.GET.get('data_movimentacao')
-        matricula.ano = request.GET.get('ano')
-        matricula.situacao = movimentacao
-        matricula.data_movimentacao = data_movimentacao
-        matricula.save()
-        
-        if(movimentacao == "REMA"):
-            if (verificar_matricula_ativa_no_ano(matricula.ano, matricula.aluno.rm)):
-                classe = (Classe.objects.get(pk=request.GET.getlist('classe_remanejamento')[0]) if (request.GET.getlist('classe_remanejamento')[0]) != '0' else None)
-                matricular_aluno(request.GET.get('ano'),classe, matricula.aluno,
-                                 Classe.retornarProximoNumeroClasse(Matricula, classe),
-                                 data_movimentacao)
-                return criarMensagem("Remanejamento efetuado!", "success")
-            else:
-                return criarMensagem("Aluno com matrícula ativa no Ano!!!","danger")
-        elif (movimentacao == "BXTR"):
-            aluno = Aluno.objects.get(pk=matricula.aluno.rm)
-            aluno.status = 0
-            aluno.save()
+        data_movimentacao = datetime.strptime(request.GET.get('data_movimentacao'),'%Y-%m-%d').date()
+       
+    
+        if (data_movimentacao > matricula.data_matricula):
+            movimentacao = request.GET.getlist('movimentacao')[0]
+            matricula.situacao = movimentacao
+            matricula.ano = request.GET.get('ano')
+            matricula.data_movimentacao = data_movimentacao
+            
+            if(movimentacao == "REMA"):
+                matricula.save()
+                if (verificar_matricula_ativa_no_ano(matricula.ano, matricula.aluno.rm)):
+                    classe = (Classe.objects.get(pk=request.GET.getlist('classe_remanejamento')[0]) if (request.GET.getlist('classe_remanejamento')[0]) != '0' else None)
+                    matricular_aluno(request.GET.get('ano'),classe, matricula.aluno,
+                                    Classe.retornarProximoNumeroClasse(Matricula, classe),
+                                    data_movimentacao)
+                    
+                    return criarMensagem("Remanejamento efetuado!", "success")
+                else:
+                    return criarMensagem("Aluno com matrícula ativa no Ano!!!","danger")
+            elif (movimentacao == "BXTR"):
+                aluno = Aluno.objects.get(pk=matricula.aluno.rm)
+                aluno.status = 0
+                aluno.save()
+                matricula.save()
 
-            return criarMensagem("Transferência efetuada!", "success")
+                return criarMensagem("Transferência efetuada!", "success")
+            else:
+                return criarMensagem("Movimentação efetuada!", "success")
         else:
-             return criarMensagem("Movimentação efetuada!", "success")
+            return criarMensagem("Data da movimentação deve ser maior que a data da matrícula!", "warning")
+
 
         
     except Exception as erro:
@@ -105,28 +111,23 @@ def carregar_classes_remanejamento(request):
     opcoes = "<option value='0'>Selecione</option>"
                                             
     for c in classes:
-        if c.periodo == "M":
-            periodo = "MANHÃ"
-        else:
-            periodo = "TARDE"
-        opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
+       periodo = Classe.retornarDescricaoPeriodo(c)
+       opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
         
     return HttpResponse(opcoes)
 
 
-def carregar_classes(request):
-    ano = request.GET.get('ano')
-    classes = Classe.objects.filter(ano=ano)
-    opcoes = "<option value='0'>Selecione</option>"
+#def carregar_classes(request):
+ 
+#    ano = request.GET.get('ano')
+#    classes = Classe.objects.filter(ano=ano)
+#    opcoes = "<option value='0'>Selecione</option>"
                                             
-    for c in classes:
-        if c.periodo == "M":
-            periodo = "MANHÃ"
-        else:
-            periodo = "TARDE"
-        opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
+#    for c in classes:
+#        periodo = Classe.retornarDescricaoPeriodo(c)
+#        opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
         
-    return HttpResponse(opcoes)
+#    return HttpResponse(opcoes)  
 
 
 def carregar_linhas(classe, ordem="numero"):
@@ -161,9 +162,10 @@ def carregar_linhas(classe, ordem="numero"):
             situacao = "INDEFINIDA"
         if m.data_movimentacao is None:
             m.data_movimentacao = ''
+            
         linhas += f"""<tr> <td class='text-center'><button class='rounded-circle bg-light text-dark border-success'>{m.numero} </button></td> <td >{m.aluno.nome}</td> <td class={cor}> {situacao} </td> 
-                            <td  class='text-center'> {m.data_matricula} </td> 
-                            <td  class='text-center text-danger'> {m.data_movimentacao} </td>
+                            <td  class='text-center'> {m.data_matricula.strftime('%d/%m/%Y')} </td> 
+                            <td  class='text-center text-danger'> {converter_data_formato_br_str(m.data_movimentacao)} </td>
                         <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg movimentar'
           value={m.id} data-bs-toggle='modal' data-bs-target='#movimentarModal'> 
                            <i class="bi bi-arrow-down-up"></i>
@@ -180,13 +182,16 @@ def excluir_matricula(request):
   
         matricula = request.GET.get('matricula')
         matricula = Matricula.objects.get(pk=matricula)
+        aluno = Aluno.objects.get(pk=matricula.aluno.rm)
         if matricula:
             matricula.delete()
+            aluno.status = 0
+            aluno.save()
             return criarMensagem("Matrícula excluída com sucesso!", "success")
     
     
 
-## Não implementado ainda
+
 def buscar_matricula(request):
     matricula = request.GET.get('matricula')
     matricula = Matricula.objects.get(pk=matricula)
@@ -219,11 +224,13 @@ def buscar_matricula(request):
     
     return HttpResponse(corpo)
     
-
 def carregar_matriculas(request):
-    classe = request.GET.getlist('classe')[0]
+    classe = request.GET.get('classe')
     linhas = carregar_linhas(classe, 'numero')  
-    return HttpResponse(linhas)
+    if linhas:
+        return HttpResponse(linhas)
+    else:
+        return criarMensagem("Sem alunos matriculados","info")
 
 
 # Verificar se existe matrícula ativa no ano, se não possuir pode matricular

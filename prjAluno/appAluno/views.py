@@ -885,7 +885,7 @@ def baixar_declaracao(request):
                                  Rua 14, 1303 A - Conjunto Habtacional José Luís Simões - Orlândia - SP - (16)3820-8230  <br/>
                                  <img src="appAluno/static/appAluno/jpeg/logo_prefeitura.jpg" valign="middle" height="50" width="50" />{espacos}victorianonino@gmail.com {espacos}<img src="appAluno/static/appAluno/jpeg/logo_escola.jpg" valign="middle" height="50" width="50" />""", style=style ) )
       
-   
+    
     if matricula is not None:
         descritivo_situacao = Matricula.retornarDescricaoSituacao(matricula)
         dt_nascimento = (aluno.data_nascimento).split('-')
