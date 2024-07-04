@@ -521,6 +521,7 @@
     function sendGravar() {
       let nome = document.getElementById("id_nome").value.toUpperCase();
       let ra = document.getElementById("id_ra").value.toUpperCase();
+      
       $.post({
         url: "{% url 'gravar' %}",
         headers: {

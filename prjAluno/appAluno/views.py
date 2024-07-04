@@ -35,6 +35,8 @@ def buscar_duplicados(alunos):
     
 # Gravar registro do Aluno
 def gravar(request):
+    nome_aluno=request.POST.get("nome")
+    print(nome_aluno)
     nome = padronizar_nome(request.POST.get("nome"))
     ra = request.POST.get("ra")
     
