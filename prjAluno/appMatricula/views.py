@@ -2,11 +2,14 @@ from django.shortcuts import render
 from django.shortcuts import HttpResponse
 from appClasse.models import Classe
 from appAluno.models import Aluno
+from appAno.models import Ano
 from .models import Matricula
 from django.db.models import Q
-from utilitarios.utilitarios import criarMensagem, converter_data_formato_br_str
+from utilitarios.utilitarios import criarMensagem, converter_data_formato_br_str, criarMensagemModal
 from datetime import datetime
 # Create your views here.
+
+
 
 
 def matricula(request):
@@ -20,6 +23,97 @@ def adicionar(reqeust):
 
 def deletar(request):
     pass
+
+
+#Buscar aluno
+def buscarAluno(request):
+    nome = request.GET.get('nome')   
+    # Se status não ativo
+    alunos = Aluno.objects.filter(Q(nome__contains=nome))[:5]
+    linhas = ''
+    for a in alunos:
+        linhas += f"""<tr><td>{a.nome}</td><td>{a.ra}</td><td class='text-center'><button type="button" class="btn btn-outline-dark btn-lg adicionarNaClasse"
+                        value={a.rm} > 
+                        <i class="bi bi-plus-circle-fill"></i>
+                        </button></td></tr>"""
+    
+    return HttpResponse(linhas)    
+
+
+def matricular_aluno(ano, classe, aluno, numero, data_matricula, data_movimentacao=None, situacao='C'):
+    matricula_nova = Matricula(ano=ano, classe=classe, aluno=aluno, 
+                                numero=numero,
+                                data_matricula=data_matricula, 
+                                data_movimentacao=data_movimentacao,
+                                situacao=situacao,
+                                )
+
+    matricula_nova.save()
+    
+ 
+#Exibir tela da matrícula  
+def exibirTelaMatricula(request):
+    codigo_classe = request.GET.get("classe")
+    classe = Classe.objects.get(pk=codigo_classe)
+    
+    periodo = Classe.retornarDescricaoPeriodo(classe)
+            
+    tela = f"""<form>
+                    <h5 class='bg-body-secondary d-flex rounded-5 justify-content-center p-2'><strong>{classe.serie}º{classe.turma} - {periodo} </strong></h5>
+                    <input type='hidden' id='codClasseMatricula' value={classe.id} />
+                    <div class='row'>
+                    <div class='col form-group'>
+                    <label for='pesquisaAluno'>Nome</label>
+                    <input id='pesquisaAluno' class='form-control' type='text'\>
+                    </div>   
+                    <div class='col-5 form-group'> 
+                    <label for='dataMatriculaIndividual'>Data da Matrícula</label>
+                    <input id='dataMatriculaIndividual' class='form-control' type='date' value='{datetime.now().strftime("%Y-%m-%d")}'\>
+                    </div>               
+                    </div>
+                    <div class='row'>
+                    
+                    </div>
+                    
+                    </form>
+                    """
+   
+    return HttpResponse(tela)
+
+    
+#Adicionar aluno na classe        
+def adicionarNaClasse(request):
+    try:
+         
+        aluno = Aluno.objects.get(pk=request.GET.get('aluno'))
+        ano = request.GET.get('ano')
+        ano = Ano.objects.get(pk=ano)
+        if (verificar_matricula_ativa_no_ano(ano, aluno.rm)):
+            classe = Classe.objects.get(pk=request.GET.get('classe'))
+          
+            matricula = Matricula.objects.filter(aluno=aluno)
+            for m in matricula:
+                if m.classe.serie == classe.serie:
+                    if m.situacao == 'P':
+                        m.situacao = 'R'
+                    m.save()
+           
+               
+            matricular_aluno(ano, classe, aluno, 
+                              Classe.retornarProximoNumeroClasse(Matricula, classe),
+                              request.GET.get('data_matricula'))
+            
+            aluno.status = 2
+            aluno.save()
+            
+            return criarMensagemModal("Matrícula Efetuada", "success")
+        else:
+            return criarMensagemModal("Com Matrícula Ativa no Ano!!!", "danger")
+
+    except Exception as error:    
+        print(error)
+        return criarMensagemModal("Erro ao efetuar a Matrícula", "danger")
+
 
 def matricular_aluno(ano, classe, aluno, numero, data_matricula, data_movimentacao=None, situacao='C'):
     matricula_nova = Matricula(ano=ano, classe=classe, aluno=aluno, 
@@ -42,14 +136,15 @@ def movimentar(request):
         if (data_movimentacao > matricula.data_matricula):
             movimentacao = request.GET.getlist('movimentacao')[0]
             matricula.situacao = movimentacao
-            matricula.ano = request.GET.get('ano')
+            ano = Ano.objects.get(pk=request.GET.get('ano'))
+            matricula.ano = ano
             matricula.data_movimentacao = data_movimentacao
             
             if(movimentacao == "REMA"):
                 matricula.save()
                 if (verificar_matricula_ativa_no_ano(matricula.ano, matricula.aluno.rm)):
                     classe = (Classe.objects.get(pk=request.GET.getlist('classe_remanejamento')[0]) if (request.GET.getlist('classe_remanejamento')[0]) != '0' else None)
-                    matricular_aluno(request.GET.get('ano'),classe, matricula.aluno,
+                    matricular_aluno(ano,classe, matricula.aluno,
                                     Classe.retornarProximoNumeroClasse(Matricula, classe),
                                     data_movimentacao)
                     
@@ -104,6 +199,7 @@ def carregar_movimentacao(request):
 
 def carregar_classes_remanejamento(request):
     ano = request.GET.get('ano')
+    ano = Ano.objects.get(pk=ano)
      
     classe_atual = Classe.objects.get(pk=request.GET.get('serie'))
     classes = Classe.objects.filter(ano=ano, serie=classe_atual.serie)
@@ -153,8 +249,10 @@ def carregar_linhas(classe, ordem="numero"):
             cor = "text-success"
         elif m.situacao == "P":
             situacao = "PROMOVIDO"
+            cor = "text-secondary"
         elif m.situacao == "R":
             situacao = "REPROVADO"
+            cor = "text-dark"
         elif m.situacao == "NCFP":
             cor = "text-danger"
             situacao = "Ñ COMP. FORA PRAZO"
@@ -237,8 +335,20 @@ def carregar_matriculas(request):
 # Se possuir não pode
 def verificar_matricula_ativa_no_ano(ano, rm, situacao='C'):
     matriculas = Matricula.objects.filter(Q(ano=ano) & Q(aluno_id=rm) & Q(situacao=situacao))  
-    return False if matriculas else True   
-        
+    return False if matriculas else True 
+  
+# Veriricar se aluno já foi matriculado na mesma série  no mesmo ano 09/10/2024       
+def verificar_matricula_na_mesma_serie_ano_corrente(matricula,serie):
+
+    for m in matricula:
+        print(m.classe.serie)
+    return False if matricula else True
+
+# Veriricar se aluno já foi matriculado na mesma série qualquer ano 09/10/2024       
+#def verificar_matricula_na_mesma_serie_mesmo_ano(rm, serie):
+#    matriculas = Matricula.objects.filter(Q(aluno_id=rm) & Q(serie=serie))
+#    return False if matriculas else True
+
 
 def deletar_todas_matriculas_da_classe(classe):
     matriculas = Matricula.objects.filter(classe=classe)
@@ -259,6 +369,7 @@ def upload_matriculas(request):
         classe = int(request.GET.get('classe'))
         classe = Classe.objects.get(pk=classe)
         ano = request.GET.get('ano')
+        ano = Ano.objects.get(pk=ano)
        
         data_matricula = request.GET.get('data_matricula')
         
@@ -282,6 +393,7 @@ def upload_matriculas(request):
                 aluno = Aluno.objects.get(pk=cod['rm'])
                 
                 if (verificar_matricula_ativa_no_ano(ano, aluno.rm) or data_movimentacao):
+                   
                     aluno.status = 2
                     numero = Classe.retornarProximoNumeroClasse(Matricula, classe)
                     print("Situação",situacao)

@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'appAluno',
     'appClasse',
     'appMatricula',
-    'dashboard'
+    'dashboard',
+    'appAno'
 
 ]
 

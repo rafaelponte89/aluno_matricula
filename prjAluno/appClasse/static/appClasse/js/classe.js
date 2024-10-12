@@ -15,22 +15,7 @@ $(document).ready(() => {
     });
   }
 
-  function exibirTelaMatricula(classe) {
-    $.get({
-      url: "telamatricular",
-      data: {
-        classe: classe,
-      },
-      success: (response) => {
-        $("#nomeAluno").off("keyup");
-        $("#dadosMatricula").html(response);
-        $("#nomeAluno").keyup(() => sendBuscar());
-      },
-      fail: (response) => {
-        alert("Erro na matricula");
-      },
-    });
-  }
+  
 
   // buscar classe
   function buscarClasse(classe) {
@@ -84,7 +69,7 @@ $(document).ready(() => {
     $.get({
       url: "atualizarclasse",
       data: {
-        ano: $("#anoConfig").val(),
+        ano: localStorage.getItem("idAno"),
         classe: $("#codClasse").val(),
         serie: $("#serieAtualizar").val(),
         turma: $("#turmaAtualizar").val(),
@@ -103,31 +88,13 @@ $(document).ready(() => {
     });
   }
 
-  function adicionarNaClasse(aluno) {
-    console.log($("#dataMatricula").val());
-    $.get({
-      url: "adicionarNaClasse",
-      data: {
-        ano: $("#ano").html(),
-        classe: $("#codClasseMatricula").val(),
-        aluno: aluno,
-        data_matricula: $("#dataMatricula").val(),
-      },
-      success: (response) => {
-        $("#mensagensModal").html(response);
-        setTimeout(function () {
-          $("#mensagemModal").css("display", "none");
-        }, 3000);
-      },
-      fail: (response) => {},
-    });
-  }
+ 
 
   function sendGravar() {
     $.get({
       url: "gravarclasse",
       data: {
-        ano: $("#anoConfig").val(),
+        ano: localStorage.getItem("idAno"),
         serie: $("#serie").val(),
         turma: $("#turma").val().toUpperCase(),
         periodo: $("#periodo").val(),
@@ -148,7 +115,7 @@ $(document).ready(() => {
     $.get({
       url: "listarclasse",
       data: {
-        ano: localStorage.getItem("anoConfig"),
+        ano: localStorage.getItem("idAno"),
       },
       success: (response) => {
         $("#corpoTabela").html(response);
@@ -195,27 +162,7 @@ $(document).ready(() => {
     sendListar();
   });
 
-  function sendBuscar() {
-    let nome = document.getElementById("nomeAluno").value;
-    let ano = $("#anoConfig").val();
-
-    $.get({
-      url: "buscarAluno",
-      data: {
-        nome: nome,
-        ano: ano,
-      },
-      success: (response) => {
-        $("#tabelaAlunos").html(response);
-        $(".adicionarNaClasse").off("click");
-        $(".adicionarNaClasse").click(function () {
-          aluno = $(this).val();
-          adicionarNaClasse(aluno);
-          $(this).addClass("disabled");
-        });
-      },
-    });
-  }
+  
 
   sendListar();
 
@@ -229,7 +176,7 @@ $(document).ready(() => {
     $.get({
       url: "exibirQuadro",
       data: {
-        ano: localStorage.getItem("anoConfig"),
+        ano: localStorage.getItem("idAno"),
       },
       success: (response) => {
         $("#quadroClasse").html(response);
@@ -242,7 +189,7 @@ $(document).ready(() => {
     $.get({
       url: "gerarTurmas",
       data: {
-        ano: localStorage.getItem("anoConfig"),
+        ano: localStorage.getItem("idAno"),
         m1: $("#m1").val(),
         m2: $("#m2").val(),
         m3: $("#m3").val(),
@@ -275,7 +222,6 @@ $(document).ready(() => {
 
       },
       success: (response) => {
-        alert(response);
         sendListar();
       },
     });

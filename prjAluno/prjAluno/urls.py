@@ -21,6 +21,7 @@ urlpatterns = [
     path('', include('appAluno.urls')),
     path('', include('appClasse.urls')),
     path('', include('appMatricula.urls')),
-    path('', include('dashboard.urls'))
+    path('', include('dashboard.urls')),
+    path('', include('appAno.urls'))
     
 ]

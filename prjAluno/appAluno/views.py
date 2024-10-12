@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import Aluno, Telefone
 from appClasse.models import Classe
+from appAno.models import Ano
 from appMatricula.models import Matricula
 from .forms import frmAluno
 from django.http import HttpResponse
@@ -136,6 +137,7 @@ def buscar(request):
 
 def carregar_classes(request):
     ano = request.GET.get('ano')
+    ano = Ano.objects.get(pk=ano)
     classes = Classe.objects.filter(ano=ano)
     opcoes = "<option value='0'>Selecione</option>"
                                             
@@ -164,7 +166,7 @@ def retornar_telefones(aluno):
 def buscar_historico_matriculas(request):
     rm = request.POST.get('rm')
     aluno = Aluno.objects.get(pk=rm)
-    matriculas_aluno = Matricula.objects.filter(aluno=aluno).order_by('-ano')
+    matriculas_aluno = Matricula.objects.filter(aluno=aluno)
     dados_matricula=''
     
     for matricula in matriculas_aluno:
@@ -174,6 +176,7 @@ def buscar_historico_matriculas(request):
                   <input        
                     type="text"     
                     class="form-control m-2" 
+                    title="Início: {(matricula.data_matricula).strftime("%d/%m/%Y")} || Fim: { (matricula.data_movimentacao).strftime("%d/%m/%Y") if matricula.data_movimentacao != None else "-" }"
                    
                     aria-describedby="emailHelp" 
                     placeholder="Ano" 

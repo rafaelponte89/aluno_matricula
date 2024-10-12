@@ -6,7 +6,7 @@
   </div>
 </div>
 
-<div id="" class="row mt-2 bg-body-secondary rounded-3">
+<div class="row mt-2 bg-body-secondary rounded-3">
   {% csrf_token %}
   <div class="col-sm-2 p-3">
     <select type="text" id="classes" placeholder="Classes" class="form-control formulario"
@@ -30,11 +30,16 @@
   <div class="col-sm-2 p-3">
     <input class="form-control m-1" type="date" id="dataMatricula" hidden="true" />
   </div>
+  <div class='col-sm-2 p-3'> <button type="button" class="btn btn-outline-dark btn-lg matricular" data-bs-toggle="modal"
+      data-bs-target="#matricularModal" title="Adicionar Matrícula">
+      <i class="bi bi-journal-plus"></i>
+  </div>
+  </td>
 </div>
 
 <div class="row mt-3">
   <div class="col-12">
-    <table id="tabela" class="table table-hover table-responsive table-bordered table-success">
+    <table class="table table-hover table-responsive table-bordered table-success">
       <thead>
         <th class="text-center">Nº</th>
         <th>Nome</th>
@@ -92,33 +97,47 @@
 </div>
 <!-- Fim Modal Remanejar Matricula-->
 
+
+
 <!-- Modal Matricula-->
-<div class="modal fade" id="matriculaModal" tabindex="-1" aria-labelledby="matriculaModalLabel" aria-hidden="true">
+<div class="modal fade" id="matricularModal" tabindex="-1" aria-labelledby="matricularModalLabel" aria-hidden="">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="matriculaModalLabel">
-          Edição da Matrícula
-        </h5>
+        <h5 class="modal-title" id="matricularModalLabel">Tela de matrícula</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="row">
+        <div class="col-md-2"></div>
+        <div id="mensagensModal" class="col-md-8 mt-1"></div>
+        <div class="col-md-2"></div>
       </div>
       <div class="modal-body">
         <div id="dadosMatricula" class="row">
-          <!-- Dados do Registro Aqui -->
+          <!-- Dados da Matrícula -->
+        </div>
+
+        <div class="row mt-3">
+          <div class="col-12">
+            <table  class="table table-hover table-responsive table-bordered table-success">
+              <thead>
+                <th>Nome</th>
+                <th>RA</th>
+                <th></th>
+              </thead>
+
+              <tbody id="tabelaAlunos">
+                <!-- Tabela dinâmica aparece aqui -->
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-      <div class="modal-footer mt-2">
-        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-          Cancelar
-        </button>
-        <button id="simTransferir" type="button" class="btn btn-primary" data-bs-dismiss="modal">
-          Transferir
-        </button>
-      </div>
+      <div class="modal-footer"></div>
     </div>
   </div>
 </div>
-<!-- Fim Modal Atualizar Registro-->
+<!-- Fim Modal Matricula -->
 
 <script type="text/javascript">
   $(document).ready(() => {
@@ -126,7 +145,82 @@
       "[name=csrfmiddlewaretoken]"
     ).value;
 
+
+
     $("#selecaoClasse").hide();
+
+
+    /*$(".matricular").click(() => {
+       classe = document.getElementById("classes").value;
+       exibirTelaMatricula(classe);
+       alert("tela");
+ 
+     });*/
+
+
+
+    function exibirTelaMatricula(classe) {
+      $.get({
+        url: "telamatricular",
+        data: {
+          classe: classe,
+        },
+        success: (response) => {
+          $("#dadosMatricula").html(response);
+          $("#pesquisaAluno").off("keyup").on("keyup", function () {
+            sendBuscar($(this).val(), localStorage.getItem("idAno"));
+          });
+        },
+        fail: (response) => {
+          alert("Erro na matrícula");
+        },
+      });
+    }
+
+
+    function adicionarNaClasse(aluno) {
+      console.log($("#dataMatriculaIndividual").val());
+      $.get({
+        url: "adicionarNaClasse",
+        data: {
+          ano: localStorage.getItem("idAno"),
+          classe: $("#codClasseMatricula").val(),
+          aluno: aluno,
+          data_matricula: $("#dataMatriculaIndividual").val(),
+        },
+        success: (response) => {
+          $("#mensagensModal").html(response);
+          setTimeout(function () {
+            $("#mensagemModal").css("display", "none");
+          }, 3000);
+          carregarMatriculas($("#classes").val());
+
+        },
+        fail: (response) => { },
+      });
+    }
+
+    function sendBuscar(nomeAluno, ano) {
+
+
+      $.get({
+        url: "buscarAluno",
+        data: {
+          nome: nomeAluno,
+          ano: ano,
+        },
+        success: (response) => {
+          $("#tabelaAlunos").html(response);
+          $(".adicionarNaClasse").off("click");
+          $(".adicionarNaClasse").click(function () {
+            aluno = $(this).val();
+            adicionarNaClasse(aluno);
+            $(this).addClass("disabled");
+          });
+
+        },
+      });
+    }
 
     function carregarClassesRemanejamento(ano, serie) {
       $.get({
@@ -144,7 +238,7 @@
     $("#selecaoMovimentacao").change(() => {
       if ($("#selecaoMovimentacao").val() === "REMA") {
         carregarClassesRemanejamento(
-          $("#anoConfig").val(),
+          localStorage.getItem("idAno"),
           $("#classes").val()
         );
       }
@@ -156,12 +250,12 @@
           ano: ano,
         },
         success: (response) => {
+        
+
           $("#classes").html(response);
           if (localStorage.getItem("ultimaClasse")) {
             $("#classes").val(localStorage.getItem("ultimaClasse"));
           }
-
-
         },
         fail: () => { },
       });
@@ -191,15 +285,20 @@
       $(".movimentar").off("click");
       $(".movimentar").click(function () {
         matricula = $(this).val();
-
         buscarMatricula(matricula);
       });
 
       $(".excluir").off("click");
       $(".excluir").click(function () {
         matricula = $(this).val();
-
         excluirMatricula(matricula);
+      });
+
+      $(".matricular").off("click");
+      $(".matricular").click(function () {
+        classe = document.getElementById("classes").value;
+        exibirTelaMatricula(classe);
+
       });
 
 
@@ -227,9 +326,6 @@
 
           recarregarContexto(response);
 
-
-
-
         },
         fail: (response) => { },
       });
@@ -256,7 +352,7 @@
           data_movimentacao: $("#dataMovimentacao").val(),
           movimentacao: $("#selecaoMovimentacao").val(),
           classe_remanejamento: $("#classesRemanejamento").val(),
-          ano: $("#anoConfig").val(),
+          ano: localStorage.getItem("idAno"),
         },
         success: (response) => {
           $("#mensagens").html(response);
@@ -267,7 +363,6 @@
           $("#selecaoClasse").hide();
 
           carregarMovimentacao();
-          //carregarClasses($("#anoConfig").val());
           carregarMatriculas($("#classes").val());
           sendBaixarDeclaracao($("#rmAluno").val());
         },
@@ -304,6 +399,7 @@
           });
 
           $("#dataMovimentacao").val(retornarData());
+
         },
         fail: (response) => { },
       });
@@ -311,14 +407,17 @@
 
     carregarMovimentacao();
 
-    carregarClasses(localStorage.getItem("anoConfig"));
+    carregarClasses(localStorage.getItem("idAno"));
 
-    $("#salvarConfig").click(() => {
-      carregarClasses($("#anoConfig").val());
-    });
+    /*$("#salvarConfig").click(() => {
+     
+      carregarClasses(localStorage.getItem("idAno"));
+    });*/
 
+    /*bug as classes do ano anterior que são carregadas*/
     $("#configuracoesModal").on("hidden.bs.modal", function (e) {
-      carregarClasses($("#anoConfig").val());
+     
+      carregarClasses(localStorage.getItem("idAno"));
     });
 
     $("#classes").change(() => {
@@ -343,9 +442,10 @@
     $("#movimentarModal").on("hidden.bs.modal", function (e) {
       $("#selecaoClasse").hide();
       $("#selecaoMovimentacao").val(0);
+  
     });
 
-    $("#dataMatricula").val(retornarData());
+    $("#dataMatriculaIndividual").val(retornarData());
 
     function lerArquivoCSV(arquivo, callback) {
       const leitor = new FileReader();
@@ -378,7 +478,6 @@
 
     if (localStorage.getItem("ultimaClasse")) {
       carregarMatriculas(localStorage.getItem("ultimaClasse"));
-
     }
 
 
@@ -390,7 +489,7 @@
         data: {
           matriculas: texto,
           classe: $("#classes").val(),
-          ano: $("#anoConfig").val(),
+          ano: localStorage.getItem("idAno"),
           data_matricula: $("#dataMatricula").val(),
         },
         success: (response) => {
@@ -417,6 +516,7 @@
           "X-CSRFToken": csrftoken,
         },
         success: (response) => {
+
           var blob = new Blob([response], { type: "application/pdf" });
 
           if (window.navigator && window.navigator.msSaveOrOpenBlob) {

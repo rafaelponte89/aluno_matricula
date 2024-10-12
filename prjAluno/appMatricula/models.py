@@ -1,6 +1,7 @@
 from django.db import models
 from appClasse.models import Classe
 from appAluno.models import Aluno
+from appAno.models import Ano
 # Create your models here.
 #Matrícula do aluno (NÃO IMPLEMENTADO)
 class Matricula(models.Model):
@@ -12,7 +13,7 @@ class Matricula(models.Model):
         ('P', 'PROMOVIDO'),
         ('R', 'REPROVADO'),
     )
-    ano = models.IntegerField(blank=False, null=False, default=0)
+    ano = models.ForeignKey(Ano, on_delete=models.RESTRICT, blank=False, null=False, default=0)
     classe = models.ForeignKey(Classe, on_delete=models.RESTRICT, default='')
     aluno = models.ForeignKey(Aluno, on_delete=models.RESTRICT, default='')
     numero = models.IntegerField(blank=False, null=False, default=0)
@@ -33,4 +34,7 @@ class Matricula(models.Model):
         for i in range(len(self.SITUACAO)):
             if self.situacao == self.SITUACAO[i][0]:
                 return self.SITUACAO[i][1]
+
+
+
                 

@@ -1,4 +1,5 @@
 from django.db import models
+from appAno.models import Ano
 
 # Create your models here.
 #Classe do ano (NÃO IMPLEMENTADO)
@@ -14,7 +15,7 @@ class Classe(models.Model):
     )
     serie = models.CharField(max_length=1, blank=False, null=False )
     turma = models.CharField(max_length=1, blank=False, null=False)
-    ano = models.CharField(max_length=4, blank=False, null=False)
+    ano = models.ForeignKey(Ano, on_delete=models.RESTRICT, blank=False, null=False)
     periodo = models.CharField(max_length=1, choices=PERIODO_CHOICES, blank=False, null=False)
     
     def __str__(self):

@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from appClasse.models import Classe
+from appAno.models import Ano
 from appMatricula.models import Matricula
 from django.http import JsonResponse, HttpResponse
 
@@ -13,7 +14,7 @@ def dashboard(request):
 
 def visualizar_alunos_periodo(request):
 
-    ano = request.GET.get('ano')
+    ano = Ano.objects.get(pk=request.GET.get('ano'))
 
     manha =  Matricula.objects.filter(classe__periodo='M').filter(situacao='C').filter(ano=ano).count()
     tarde =  Matricula.objects.filter(classe__periodo='T').filter(situacao='C').filter(ano=ano).count()

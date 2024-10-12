@@ -837,7 +837,7 @@
     }
 
     $("#relatorio").click(() => {
-      carregarClasses($("#anoConfig").val());
+      carregarClasses(localStorage.getItem("idAno"));
     });
   });
 </script>

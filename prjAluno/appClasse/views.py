@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .models import Classe
 from appAluno.models import Aluno
+from appAno.models import Ano
 from appMatricula.models import Matricula
 from django.shortcuts import HttpResponse
 from datetime import datetime
@@ -62,6 +63,7 @@ def buscar(request):
 def gravar(request):
     try:
         ano = request.GET.get('ano')
+        ano = Ano.objects.get(pk=ano)
         serie = request.GET.get('serie')
         turma = request.GET.get('turma')
         periodo = request.GET.get('periodo')
@@ -95,8 +97,9 @@ def atualizar(request):
         classeid = request.GET.get('classe')
         
         classe = Classe.objects.get(pk=classeid)
+        ano = Ano.objects.get(pk=request.GET.get('ano'))
       
-        classe.ano = request.GET.get('ano')
+        classe.ano = ano
    
         classe.serie = request.GET.get('serie')
         classe.turma = request.GET.get('turma').upper()
@@ -111,6 +114,8 @@ def atualizar(request):
 
 #Construir tabela das classes do ano recebido como parâmetro
 def carregarAnoAtual(ano):
+    print("Ano",ano)
+    ano = Ano.objects.get(pk=ano)
     classe = Classe.objects.filter(ano=ano)
     corpo = ''
     
@@ -121,10 +126,7 @@ def carregarAnoAtual(ano):
           value={c.id} data-bs-toggle="modal" data-bs-target="#atualizarModal"> 
                             <i class="bi bi-arrow-repeat"></i> 
                         </button> </td>
-                        <td class='text-center'>  <button type="button" class="btn btn-outline-dark btn-lg matricular"
-                        value={c.id} data-bs-toggle="modal" data-bs-target="#matricularModal" title="Adicionar Matrícula"> 
-                            <i class="bi bi-journal-plus"></i> 
-                        </button> </td>
+                       
                         <td class='text-center'>  <button type="button" class="btn btn-outline-dark btn-lg visualizar"
                         value={c.id} data-bs-toggle="modal" data-bs-target="#visualizarClasseModal"> 
                             <i class="bi bi-eye"></i>
@@ -136,58 +138,11 @@ def carregarAnoAtual(ano):
  
 #Listar classes em HTML   
 def listar(request):
-    ano = request.GET.get("ano")
+    ano = int(request.GET.get("ano"))
+    print("id_ano", ano)
     return HttpResponse(carregarAnoAtual(ano))
 
 
-#Buscar aluno
-def buscarAluno(request):
-    nome = request.GET.get('nome')   
-    # Se status não ativo
-    alunos = Aluno.objects.filter(Q(nome__contains=nome))[:5]
-    linhas = ''
-    for a in alunos:
-        linhas += f"""<tr><td>{a.nome}</td><td>{a.ra}</td><td class='text-center'><button type="button" class="btn btn-outline-dark btn-lg adicionarNaClasse"
-                        value={a.rm} > 
-                        <i class="bi bi-plus-circle-fill"></i>
-                        </button></td></tr>"""
-    
-    return HttpResponse(linhas)    
-
-
-def matricular_aluno(ano, classe, aluno, numero, data_matricula, data_movimentacao=None, situacao='C'):
-    matricula_nova = Matricula(ano=ano, classe=classe, aluno=aluno, 
-                                numero=numero,
-                                data_matricula=data_matricula, 
-                                data_movimentacao=data_movimentacao,
-                                situacao=situacao,
-                                )
-
-    matricula_nova.save()
-    
-    
-#Adicionar aluno na classe        
-def adicionarNaClasse(request):
-    try:
-         
-        aluno = Aluno.objects.get(pk=request.GET.get('aluno'))
-        ano = request.GET.get('ano')
-        if (verificar_matricula_ativa_no_ano(ano, aluno.rm)):
-            classe = Classe.objects.get(pk=request.GET.get('classe'))   
-            matricular_aluno(ano, classe, aluno, 
-                              Classe.retornarProximoNumeroClasse(Matricula, classe),
-                              request.GET.get('data_matricula'))
-            
-            aluno.status = 2
-            aluno.save()
-            
-            return criarMensagemModal("Matrícula Efetuada", "success")
-        else:
-            return criarMensagemModal("Com Matrícula Ativa no Ano!!!", "danger")
-
-    except Exception as error:    
-        print(error)
-        return criarMensagemModal("Erro ao efetuar a Matrícula", "danger")
 
 
 #Visualizar alunos da classe
@@ -218,36 +173,7 @@ def exibirClasses(request):
     </div>"""
   
     return HttpResponse(tabela)  
-    
-#Exibir tela da matrícula  
-def exibirTelaMatricula(request):
-    codigo_classe = request.GET.get("classe")
-    classe = Classe.objects.get(pk=codigo_classe)
-    
-    periodo = Classe.retornarDescricaoPeriodo(classe)
-            
-    tela = f"""<form>
-                    <h5 class='bg-body-secondary d-flex rounded-5 justify-content-center p-2'><strong>{classe.serie}º{classe.turma} - {periodo} </strong></h5>
-                    <input type='hidden' id='codClasseMatricula' value={classe.id} />
-                    <div class='row'>
-                    <div class='col form-group'>
-                    <label for='nomeAluno'>Nome</label>
-                    <input id='nomeAluno' class='form-control' type='text'\>
-                    </div>   
-                    <div class='col-5 form-group'> 
-                    <label for='dataMatricula'>Data da Matrícula</label>
-                    <input id='dataMatricula' class='form-control' type='date' value='{datetime.now().strftime("%Y-%m-%d")}'\>
-                    </div>               
-                    </div>
-                    <div class='row'>
-                    
-                    </div>
-                    
-                    </form>
-                    """
    
-    return HttpResponse(tela)
-
 
 def contar(serie,ano,periodo):
     classes = Classe.objects.filter(ano=ano).filter(serie=serie).filter(periodo=periodo)
@@ -270,6 +196,7 @@ def gerarTurma(serie, ano, series, periodo, turma):
 # Gera as turmas
 def gerarTurmas(request):
     ano = request.GET.get('ano')
+    ano = Ano.objects.get(pk=ano)
     turma = 65
     
     for s in range(1, 10):
@@ -294,6 +221,7 @@ def gerarTurmas(request):
 def exibirQuadro(request):
     
     ano = request.GET.get('ano')
+    ano = Ano.objects.get(pk=ano)
     
     classe = Classe.objects.filter(ano=ano)
     if (classe):

@@ -25,7 +25,7 @@ class Aluno (models.Model):
         alunos = Aluno.objects.order_by('-rm')[:n]
         return alunos
     
-#Telefones do aluno (NÃO IMPLEMENTADO)
+#Telefones do aluno
 class Telefone(models.Model):
     TEL_CHOICES = (
         ('M','MÃE'),
@@ -50,7 +50,9 @@ class Telefone(models.Model):
         for i in range(len(self.TEL_CHOICES)):
             if self.contato == self.TEL_CHOICES[i][0]:
                 return self.TEL_CHOICES[i][1]
-    
+
+
+
 #Documentos do aluno (NÃO IMPLEMENTADO)
 class Prontuario(models.Model):
     DOCUMENTO_CHOICES = (
