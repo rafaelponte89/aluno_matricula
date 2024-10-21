@@ -1,6 +1,7 @@
 from django.shortcuts import render, HttpResponse
 from .models import Ano
 from appMatricula.models import Matricula
+from appAluno.models import Aluno
 from utilitarios.utilitarios import criarMensagem
 
 # Create your views here.
@@ -49,6 +50,7 @@ def listar_ano(request):
     linhas = ''
     for a in anos:
         linhas += f"""<tr><td class='text-center'><button type='button' class='btn btn-outline-dark btn-lg selecionarAno'
+            id={a.ano}
           value={a.ano} > {a.ano} </button></td>
         <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg excluir'
           value={a.id}> 
@@ -78,12 +80,15 @@ def fechar_abrir_ano(request):
     ano.fechado = not ano.fechado
     ano.save()
     for matricula in matriculas:
+        aluno = Aluno.objects.get(pk=matricula.aluno.rm)
         if ano.fechado and matricula.situacao == 'C':
             matricula.situacao = 'P'
+            aluno.status = 0
         else:
             if matricula.situacao == 'P':
                 matricula.situacao = 'C'
-        
+                aluno.status = 2
+        aluno.save()
         matricula.save()
 
     return HttpResponse(ano.fechado)

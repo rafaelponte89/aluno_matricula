@@ -45,6 +45,10 @@ def gravar(request):
         return
     
     form = frmAluno({"nome": nome, "ra": ra})
+    aluno = Aluno.objects.filter(ra=ra)
+    if aluno:
+        return criarMensagem(f"Já existe RA {ra} cadasrado para outro aluno!!!","danger")
+    
     if form.is_valid():
         if len(nome) > REF_TAMANHO_NOME and len(ra) > REF_TAMANHO_RA:
             form.save()
@@ -403,6 +407,7 @@ def buscar_dados_aluno(request):
                 <li class="nav-item">
                     <a id="aba2" class="nav-link" href="#">Matrículas</a>
                 </li>
+                 -->
  
             </ul>
 
@@ -534,6 +539,9 @@ def atualizar(request):
                 
             if tamanho_ra > REF_TAMANHO_RA:
                 aluno.ra = ra
+            aluno = Aluno.objects.filter(ra=ra)
+            if aluno:
+                return criarMensagem(f"Já existe RA {ra} cadasrado para outro aluno!!!","danger")
 
             aluno.save()
             print("Nome Salvo", aluno.nome)

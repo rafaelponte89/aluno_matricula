@@ -29,11 +29,8 @@
 
     </div>
 
-
-
-
 </div>
-</div>
+
 
 <div class="row mt-3">
     <div class="col-12">
@@ -125,7 +122,11 @@
 
                 $("#ano").html(localStorage.getItem("anoConfig"));
                 sendSelecionarAno(localStorage.getItem("anoConfig"));
+                $(".selecionarAno").removeClass("text-primary");
+                $(this).addClass("text-primary");
+
             });
+            $("#"+localStorage.getItem("anoConfig")).addClass("text-primary");
 
         }
 
@@ -137,6 +138,7 @@
                     $("#corpoTabela").html(response);
 
                     recarregarElementos();
+                   
 
 
                 },

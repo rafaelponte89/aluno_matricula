@@ -56,21 +56,21 @@
     <div id="menu" class="row">
       <ul class="nav">
         <li class="m-2">
-          <a class="" href="{% url 'inicial' %}" id="aluno">Alunos</a>
+          <a class="menuSup p-2" href="{% url 'inicial' %}" id="aluno">Alunos</a>
         </li>
         <li class="m-2">
-          <a class="" href="{% url 'classe' %}" id="classe">Classes </a>
+          <a class="menuSup p-2" href="{% url 'classe' %}" id="classe">Classes </a>
         </li>
         <li class="m-2">
-          <a class="" href="{% url 'matricula' %}" id="matricula">
+          <a class="menuSup p-2" href="{% url 'matricula' %}" id="matricula" >
             Matriculas
           </a>
         </li>
         <li class="m-2">
-          <a class="" href="{% url 'ano' %}" id="anoLetivo">Anos</a>
+          <a class="menuSup p-2" href="{% url 'ano' %}" id="anoLetivo">Anos</a>
         </li>
         <li class="m-2">
-          <a class="" href="{% url 'dashboard' %}" id="dashboard">
+          <a class="menuSup p-2" href="{% url 'dashboard' %}" id="dashboard">
             Dashboard
           </a>
         </li>
@@ -176,7 +176,10 @@
                     localStorage.setItem("idAno",response);
                     localStorage.setItem("anoConfig",ano); 
                     $("#ano").html(ano); 
-                    location.reload();   
+                    location.reload();  
+                   
+
+ 
                 },
                 fail: (response) => {
                     alert("sem anos");
@@ -201,6 +204,20 @@
           buscarAno(ano);
         });
 
+
+        //desenvolvendo menu
+        $(".menuSup").click(function () {
+            
+           localStorage.setItem("menuSup",$(this).attr('id'));
+           
+          
+        });
+        $(".menuSup").removeClass("text-dark");
+        $(".menuSup").removeClass("rounded-2");
+        $("#"+localStorage.getItem("menuSup")).addClass("text-warning");
+        $(".menuSup").removeClass("bg-dark");
+        $("#"+localStorage.getItem("menuSup")).addClass("bg-dark");
+        $("#"+localStorage.getItem("menuSup")).addClass("rounded-2");
       });
     </script>
   </div>

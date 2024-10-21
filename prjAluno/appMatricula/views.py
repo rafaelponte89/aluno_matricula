@@ -380,11 +380,11 @@ def upload_matriculas(request):
     
         for linha in range(len(linhas_array)-1):  
             ra = int(linhas_array[linha][4])  
-            situacao = ('C' if (len(linhas_array[linha][8]) == 0)
-                        else linhas_array[linha][8])
+            situacao = ('C' if (len(linhas_array[linha][9]) == 0)
+                        else linhas_array[linha][9])
             
-            data_movimentacao = (None if(len(linhas_array[linha][9]) == 0) else 
-                                 datetime.strptime(linhas_array[linha][9],"%d/%m/%Y"))
+            data_movimentacao = (None if(len(linhas_array[linha][10]) == 0) else 
+                                 datetime.strptime(linhas_array[linha][10],"%d/%m/%Y"))
             print(data_movimentacao)
    
             rm = Aluno.objects.filter(ra=ra).values('rm')[:1]

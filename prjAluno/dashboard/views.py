@@ -11,17 +11,18 @@ def dashboard(request):
 
     return render(request, 'dashboard.html',)
 
-
+def filtrar_cursando_promovido(ano):
+    excluir = ['REMA','BXTR','NFC']
+    manha =  Matricula.objects.filter(classe__periodo='M').exclude(situacao=excluir).filter(ano=ano).count()
+    tarde =  Matricula.objects.filter(classe__periodo='T').exclude(situacao=excluir).filter(ano=ano).count()
+    integral =  Matricula.objects.filter(classe__periodo='I').exclude(situacao=excluir).filter(ano=ano).count()
+    return manha, tarde, integral
 def visualizar_alunos_periodo(request):
 
     ano = Ano.objects.get(pk=request.GET.get('ano'))
-
-    manha =  Matricula.objects.filter(classe__periodo='M').filter(situacao='C').filter(ano=ano).count()
-    tarde =  Matricula.objects.filter(classe__periodo='T').filter(situacao='C').filter(ano=ano).count()
-    integral =  Matricula.objects.filter(classe__periodo='I').filter(situacao='C').filter(ano=ano).count()
-
+   
+    manha, tarde, integral = filtrar_cursando_promovido(ano)
     print(manha, tarde)
-    print('executon')
     dados = {
         'Manhã': manha,
         'Tarde': tarde,
@@ -53,7 +54,8 @@ def visualizar_alunos_mes(request):
         mes += 1
         dados[k] =  (Matricula.objects.exclude(situacao='REMA').filter(ano=ano).filter(data_matricula__month__lte=mes).count()
         -Matricula.objects.filter(situacao='BXTR').filter(ano=ano).filter(data_movimentacao__month__lte=mes).count()
-        -Matricula.objects.filter(situacao='NFCP').filter(ano=ano).filter(data_movimentacao__month__lte=mes).count())
+        -Matricula.objects.filter(situacao='NFCP').filter(ano=ano).filter(data_movimentacao__month__lte=mes).count()
+        -Matricula.objects.filter(situacao='P').filter(ano=ano).filter(data_movimentacao__month__lte=mes).count())
     print(dados)
     return JsonResponse(dados, safe=False)
     
