@@ -122,11 +122,17 @@
 
                 $("#ano").html(localStorage.getItem("anoConfig"));
                 sendSelecionarAno(localStorage.getItem("anoConfig"));
-                $(".selecionarAno").removeClass("text-primary");
-                $(this).addClass("text-primary");
+                $(".selecionarAno").removeClass("text-warning");
+                $(".selecionarAno").removeClass("bg-dark");
+
+                $(this).addClass("text-warning");
+                $(this).addClass("bg-dark");
+
 
             });
-            $("#"+localStorage.getItem("anoConfig")).addClass("text-primary");
+            $("#"+localStorage.getItem("anoConfig")).addClass("text-warning");
+            $("#"+localStorage.getItem("anoConfig")).addClass("bg-dark");
+
 
         }
 

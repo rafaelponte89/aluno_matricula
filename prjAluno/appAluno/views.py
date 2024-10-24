@@ -407,7 +407,7 @@ def buscar_dados_aluno(request):
                 <li class="nav-item">
                     <a id="aba2" class="nav-link" href="#">Matrículas</a>
                 </li>
-                 -->
+                 
  
             </ul>
 
@@ -510,6 +510,8 @@ def atualizar(request):
     print("novos_tel",novos_tel)
         
     tamanho_ra = len(ra)
+    
+
 
     rm = int(request.POST.get("rm"))
     tamanho_nome = len(nome)
@@ -517,6 +519,11 @@ def atualizar(request):
         if (tamanho_nome > REF_TAMANHO_NOME):
            
             aluno = Aluno.objects.get(pk=rm)
+         
+            if aluno.ra != ra:
+                existe_aluno = Aluno.objects.filter(ra=ra)
+                if existe_aluno:                
+                    return criarMensagem(f"Já existe RA {ra} cadastrado para outro aluno!!!","danger")
             aluno.nome = nome
             aluno.ra = ra
             aluno.d_ra = dra
@@ -539,9 +546,8 @@ def atualizar(request):
                 
             if tamanho_ra > REF_TAMANHO_RA:
                 aluno.ra = ra
-            aluno = Aluno.objects.filter(ra=ra)
-            if aluno:
-                return criarMensagem(f"Já existe RA {ra} cadasrado para outro aluno!!!","danger")
+
+            
 
             aluno.save()
             print("Nome Salvo", aluno.nome)
